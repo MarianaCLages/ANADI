@@ -90,11 +90,9 @@ shapiro.test(dados8cyl)
 # usar um teste de Kruskal-Wallis.
 #
 #
-
 dados4cylComp <- dados[dados$Cylinders == 4, ] 
 dados6cylComp <- dados[dados$Cylinders == 6, ]
 dados8cylComp <- dados[dados$Cylinders == 8, ]
-
 
 dados_numericos <- c(dados4cylComp,dados6cylComp,dados8cylComp)
 grupos <- factor (c(rep("4 Cilindros",length(dados4cylComp$Cylinders)), 
@@ -128,7 +126,6 @@ summary(modelo)
 
 # Visualização dos resultados.
 plot(modelo)
-
 
 
 ############################## 3Bii ################################
