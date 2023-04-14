@@ -19,21 +19,21 @@
 \author{
 \IEEEauthorblockN{1\textsuperscript{st} Francisco Redol}
 \IEEEauthorblockA{\textit{Instituto Politécnico do Porto} \\
-\textit{ISEP}\\
+\textit{ISEP - DEI}\\
 Porto, Portugal \\
 1201239@isep.ipp.pt}
 \and
 
 \IEEEauthorblockN{2\textsuperscript{nd} Mariana Lages}
 \IEEEauthorblockA{\textit{Instituto Politécnico do Porto} \\
-\textit{ISEP}\\
+\textit{ISEP - DEI}\\
 Porto, Portugal \\
 1200902@isep.ipp.pt}
 \and
 
 \IEEEauthorblockN{3\textsuperscript{rd} Miguel Jordão}
 \IEEEauthorblockA{\textit{Instituto Politécnico do Porto} \\
-\textit{ISEP}\\
+\textit{ISEP - DEI}\\
 Porto, Portugal \\
 1201487@isep.ipp.pt}
 }
@@ -84,14 +84,30 @@ Second, the independent variable (number of cylinders) has 3 groups of values, w
 
 Third, the observations are independent, considering that according to the essay, the number of cylinders is the key factor to consider in this variation.
 
-Fourth, do the observations have significant outliers? To answer this question, a boxplot (a type of graphic that displays the median, quartiles, and outliers of the data) was generated.
-
+Fourth, do the observations have significant outliers? To answer this question, a boxplot (a type of graphic that displays the median, quartiles, and outliers of the data) was generated.\\
 
 \begin{figure}[htbp]
-\centering{\includegraphics[width=5cm]{images/vehicles/boxplot.png}}
-\caption{Boxplot of the acceleration values according to the number of cylinders.}
-\label{vehicle_boxplot}
+    \centering{\includegraphics[width=5cm]{images/vehicles/boxplot.png}}
+    \caption{Boxplot of the acceleration values according to the number of cylinders.}
+    \label{vehicle_boxplot}
 \end{figure}
+
+At first sight, the results demonstrate that the 4-cylinder group has the highest median acceleration value (16.4), closely followed by the 6-cylinder group (16.2), 
+which pulls a significant distance from the 8-cylinder engines acceleration (11.5). 
+It is obvious that the interquartile range on 4 and 8-cylinders is much ampler than the 6-cylinders. 
+Its whiskers are also much more wide-ranging. 
+Diving deeper into the quartiles analysis, for 4-cylinder powered vehicles, the quartile inferior limit is 10.2, with its superior limit around 22.4, close to the represented outlier. 
+For the 6-cylinder, the inferior and superior limits were 12.3 and 20.8, respectively. 
+Lastly, on the 8-cylinder designed cars, 5.35 and 17.8. 
+
+After closely observing the boxplot it is confirmed that significant outliers exist, considering that acceleration is a continuous variable. 
+These are random points outside of the whiskers(highest and lowest observations within 1.5 times the interquartile range), particularly important when applied to a real-life scenario. 
+They could be explained by a vast number of variables, for instance, tyre pressure, which is outside of our scope. 
+Outliers are one of the most interesting/curious parts of a boxplot since they can reveal hidden causes.\\
+
+However, it is clear that 6-cylinder cars produce much more consistent results, while the remaining two have a wider spectre of traduced power.
+
+
 
 
 
