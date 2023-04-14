@@ -97,12 +97,12 @@ dados4cylComp <- dados[dados$Cylinders == 4, ]
 dados6cylComp <- dados[dados$Cylinders == 6, ]
 dados8cylComp <- dados[dados$Cylinders == 8, ]
 
-dados_numericos <- c(dados4cylComp,dados6cylComp,dados8cylComp)
+dados_numericos <- c(dados4cyl,dados6cyl,dados8cyl)
 grupos <- factor (c(rep("4 Cilindros",length(dados4cylComp$Cylinders)), 
                     rep("6 Cilindros",length(dados6cylComp$Cylinders)),
                     rep("8 Cilindros",length(dados8cylComp$Cylinders))))
 
-kruskal.test(dados$Acceleration, grupos)
+kruskal.test(dados_numericos, grupos) 
 #
 # Observando que  p-value = 0.0006377, inferior a 0.05, rejeitamos a hipótese h0 e 
 # concluímos que existem diferenças significativas entre os grupos de cilindros.
@@ -119,9 +119,7 @@ kruskal.test(dados$Acceleration, grupos)
 # Fazemos a definição das variáveis que vamos usar.
 weight <- dados$Weight
 horsepower <- dados$Horsepower
-acceleration <- dados$Acceleration
 cylinders <- factor(dados$Cylinders)
-
 
 # Ajuste do modelo de Regressão linear.
 modelo <- lm(Acceleration ~ weight + horsepower + cylinders, data = dados)
