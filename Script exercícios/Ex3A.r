@@ -57,6 +57,9 @@ boxplot(dadosAgrupados,
 iqr4cyl <- IQR(dados4cyl)
 iqr6cyl <- IQR(dados6cyl)
 iqr8cyl <- IQR(dados8cyl)
+median4cyl <- median(dados4cyl)
+median6cyl <- median(dados6cyl)
+median8cyl <- median(dados8cyl)
 liminf4 <- quantile(dados4cyl, 0.25) - 1.5 * iqr4cyl
 limsup4 <- quantile(dados4cyl, 0.75) + 1.5 * iqr4cyl
 liminf6 <- quantile(dados6cyl, 0.25) - 1.5 * iqr6cyl
