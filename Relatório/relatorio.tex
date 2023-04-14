@@ -13,8 +13,7 @@
 \begin{document}
 
 \title{Practical Work I - Report\\
-{\footnotesize \textsuperscript{*}This report has been carried out for the ANADI Curricular Unit}
-\thanks{Identify applicable funding agency here. If none, delete this.}
+{\footnotesize \textsuperscript{}This report has been carried out for the ANADI Curricular Unit}
 }
 
 \author{
@@ -51,16 +50,72 @@ from imported .csv files.
 regression, data analysis, data modeling, R language
 \end{IEEEkeywords}
 
-\section{Ease of Use}
+\section{Introduction}
 
-\subsection{Maintaining the Integrity of the Specifications}
+Exploratory analysis is elected as the first step in a data analysis process, providing insights into a dataset's characteristics. By exploring and summarizing data through numerous statistical and graphical procedures, researchers can identify patterns, anomalies, and potential outliers, which can guide further analysis and hypothesis testing, along with formulating theories around a certain subject. 
+In this research, we will discuss key statistical aspects of that character, such as exploratory analysis, parametric and non-parametric tests, linear regression, and data modelling based on the provided datasets. 
+By giving an insight into these techniques and their applications, we aim to emphasise the importance of these backbone concepts while doing scientific research.
+In the proposed assignment, there are three distinct datasets which will be thoroughly described, along with the steps to dissect these.
+
+\subsection{Vehicles Dataset - Data Treatment}
+The "Dados3.csv" dataset contains data about vehicle characteristics, such as acceleration, the number of cylinders in the engine, along with horsepower and the vehicle's weight.
+Through exploratory analysis, given more context, it is possible to find hidden to the naked eye information, allowing a deeper understanding of a certain context.
+For instance, a brand or a specific model.
+\section{Exploratory Analysis - Vehicles}
+Since the exercise requests to examine if there are significant differences in acceleration values between the three engine cylinder groups, it is pivotal to partition the acceleration values according to the number of cylinders. 
+This is required because the proposed challenge questions if there are significant differences in the acceleration between vehicles, which leads to a concrete hypothesis test, allowing us to answer this question through the provided accelerations per cylinder.
+So, two hypotheses were synthesized:
+    \begin{itemize}
+        \item H0: There aren't significant differences between acceleration values according to the cylinder count;
+        \item H1: There are significant differences between acceleration values between the distinct groups.
+    \end{itemize}
+After formulating the two possible premises, we observe that the faced test is bilateral.
+This is due to us facing an interest in solely finding out whether the mean acceleration of one group is higher or lower than the other one.\\
+
+To prepare the data for the performed analysis, we first imported the dataset, which then was segregated into three distinct categories. 
+These are the different numbers of cylinder counts: 4, 6 and 8.\\
+
+After setting up the required data, for the trial to be started, we needed to evaluate which kind of test could be performed on this population. 
+Starting with ANOVA, there are 6 exclusive steps which need to be accomplished.\\
+
+First, is the dependent variable continuous? Because it varies according to the number of cylinders and takes infinite possibilities of values within a certain range, it is considered so.
+
+Second, the independent variable (number of cylinders) has 3 groups of values, which complies with the two or plus variable groups.
+
+Third, the observations are independent, considering that according to the essay, the number of cylinders is the key factor to consider in this variation.
+
+Fourth, do the observations have significant outliers? To answer this question, a boxplot (a type of graphic that displays the median, quartiles, and outliers of the data) was generated.
 
 
 \begin{figure}[htbp]
-\centerline{\includegraphics{fig1.png}}
-\caption{Example of a figure caption.}
-\label{fig}
+\centering{\includegraphics[width=5cm]{images/vehicles/boxplot.png}}
+\caption{Boxplot of the acceleration values according to the number of cylinders.}
+\label{vehicle_boxplot}
 \end{figure}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 \section*{References}
 
