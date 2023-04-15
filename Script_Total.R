@@ -134,7 +134,7 @@ dados_filtrados_tempo4 <- dados1 %>%
 
 colnames(dados_filtrados_tempo4)[2:3] <- c("Bomba 1", "Bomba 2")
 
-# Convertendo os números de dias em datas
+# Converter os números de dias em datas
 data_inicial <- as.Date("2013-06-01")
 amostra_dias <- c(78, 362, 66, 156, 277, 41, 339, 169, 272, 268)
 amostra_datas <- data_inicial + amostra_dias - 1 ; amostra_datas
@@ -145,7 +145,11 @@ amostra_datas <- data_inicial + amostra_dias - 1 ; amostra_datas
 
 producao_amostra <- dados_filtrados_tempo4 %>%
   filter(as.Date(Tempo) %in% amostra_datas) %>%
-  select(Tempo, `Bomba 1`, `Bomba 2`)
+  group_by(as.Date(Tempo)) %>%
+  summarize(`Bomba 1` = mean(`Bomba 1`), `Bomba 2` = mean(`Bomba 2`))
+
+# A data da amostra "2014-02-23" não tem dados disponíveis
+
 
 boxplot(producao_amostra[, 2:3], 
         col = c("coral", "lightblue"), 
@@ -159,10 +163,10 @@ boxplot(producao_amostra[, 2:3],
 # H0: média da produção diária de petróleo da bomba 1 <= média da produção diária de petróleo da bomba 2
 # H1: média da produção diária de petróleo da bomba 1 > média da produção diária de petróleo da bomba 2
 
-# Teste t para 2 amostras independentes
-t.test(producao_amostra$`Bomba 1`, producao_amostra$`Bomba 2`, alternative = "greater", conf.level = 0.95)
+# Teste t para 2 amostras emparelhadas
+t.test(producao_amostra$`Bomba 1`, producao_amostra$`Bomba 2`, alternative = "greater", paired = TRUE)
 
-# Como p < 2.2e-16 < alfa (0.05) => rejeita-se H0.
+# Como p = 2.17e-05 < alfa (0.05), rejeita-se H0.
 # Há evidências estatísticas para afirmar que a média da produção diária de petróleo da bomba 1 é maior do que a da bomba 2 no período de 1-6-2013 e 31-5-2014, com 5% de significância.
 
 
