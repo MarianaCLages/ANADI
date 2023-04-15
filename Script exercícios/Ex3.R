@@ -104,7 +104,7 @@ grupos <- factor (c(rep("4 Cilindros",length(dados4cylComp$Cylinders)),
 
 kruskal.test(dados_numericos, grupos) 
 #
-# Observando que  p-value = 0.0006377, inferior a 0.05, rejeitamos a hipótese h0 e 
+# Observando que  p-value = 2.795e-11, inferior a 0.05, rejeitamos a hipótese h0 e 
 # concluímos que existem diferenças significativas entre os grupos de cilindros.
 
 # Com os valores obtidos, podemos atingir a conclusão de que, comparando os 3 grupos, as viaturas
