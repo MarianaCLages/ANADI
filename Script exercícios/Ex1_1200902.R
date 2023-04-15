@@ -109,17 +109,17 @@ dados_filtrados_tempo3 <- dados1 %>%
            Tempo <= as.POSIXct("2014-05-31 23:59:59", tz = "GMT"))
 
 # Calcular a média mensal de extração de barris de petróleo da bomba 1
-medias_mensais_bomba1 <- dados_filtrados_tempo3 %>%
+somas_mensais_bomba1 <- dados_filtrados_tempo3 %>%
   mutate(Mes = format(Tempo, "%m-%Y")) %>%
   group_by(Mes) %>%
-  summarise(Media = mean(bbl.d.2))
+  summarise(Soma = sum(bbl.d.2))
 
 # Encontrar o mês em que a extração foi a maior e armazenar na variável "mes_maior_valor"
-mes_maior_valor <- medias_mensais_bomba1 %>%
-  slice(which.max(medias_mensais_bomba1$Media)) %>%
+mes_maior_valor <- somas_mensais_bomba1 %>%
+  slice(which.max(somas_mensais_bomba1$Soma)) %>%
   pull(Mes) ; mes_maior_valor
 
-# O mês em que a bomba 1 extraiu mais barris de petróleo foi em agosto de 2013 (08-2013).
+# O mês em que a bomba 1 extraiu mais barris de petróleo foi em março de 2014 (03-2014).
 
 
 #iii.
@@ -151,10 +151,10 @@ producao_amostra <- dados_filtrados_tempo4 %>%
 # A data da amostra "2014-02-23" não tem dados disponíveis
 
 
-boxplot(producao_amostra[, 2:3], 
-        col = c("coral", "lightblue"), 
-        names = c("Bomba 1", "Bomba 2"), 
-        xlab = "Bomba", 
+boxplot(producao_amostra[, 2:3],
+        col = c("coral", "lightblue"),
+        names = c("Bomba 1", "Bomba 2"),
+        xlab = "Bomba",
         ylab = "Produção diária",
         main = "Produção diária por bomba")
 
