@@ -30,6 +30,13 @@ print(correlacoes)
 #Utilizamos a função "cor" que é mais correta para estudar a comparação entre pares de variáveis
 #Pois poderia ter sido utilizado o "rcorr" (que se baseava em spearman e pearson, mas ao analisarmos a população de dados deduzimos que não é possível utilizar nenhum dos dois)
 
+# Uma maneira de visualizar a matriz numa forma gráfica é utilizar o corrplot para construir um diagrama a partir dos dados
+
+library(corrplot)
+
+corrplot(correlacoes, method = "color", type = "upper", 
+         tl.col = "black", tl.srt = 45, addCoef.col = "black")
+
 #b)
 
 # Para podermos efetuar afirmações sobre uma determinada população de dados, recorremos
@@ -45,7 +52,9 @@ print(correlacoes)
 # Em terceiro, a variável independente (algoritmos) tem dois ou mais grupos de algoritmos?
 # Sim, existem 6 algoritmos.
 
-# Em quarto, as observações são independentes dado que, de acordo com as precisões dos algoritmos estas não estão diretamente interligadas
+# Em quarto, as observações são dependentes dado que, de acordo com as precisões dos algoritmos alguns interligam-se com os outros
+# isto é possível de ser observado através da matriz de correlações da alínea a) que mostra indíces em vários algortimos de interligação entre si
+# o que poderá explicar a interligação nas amostras (o que vai ser muito importante depois a definir o teste que vamos utilizar!)
 
 # Em quinto, as observações tem outliers significativos?
 # Para tal criamos um boxplot, no qual verificamos se existem outliers fora dos bigodes.
@@ -66,11 +75,11 @@ boxplot(dadosAgrupados,
 
 # Após analisar o boxplot, foi possível confirmar que, de facto, existem outliers significativos,
 # dado que a aceleração é uma variável contínua proveniente de uma medição.
-#
+
 # Contudo, será feita também a verificação através do cálculo dos valores dos limites inferiores e superiores
 # Para tal, será necessário averiguar se existem valores fora da amplitude dos bigodes.
 # Consequentemente, estes valores terão de ser calculados:
-#
+
 iqrSVMcyl <- IQR(preciSVM)
 iqrDTcyl <- IQR(preciDT)
 iqrKNcyl <- IQR(preciKN)
@@ -114,12 +123,12 @@ outliersRFcyl <- preciRF[preciRF > limsupRF | preciRF < liminfRF]
 outliersMLcyl <- preciML[preciML > limsupML | preciML < liminfML]
 
 outliersGBcyl <- preciGB[preciGB > limsupGB | preciGB < liminfGB]
-#
+
 # Em sexto, após averiguarmos que, de facto, existem outliers, não será possível usar testes ONE-WAY ANOVA, 
 # vamos também averiguar que nao existe homogenidade de variâncias.
 
 # Para realizarmos essa afirmação, usamos testes de Shapiro.
-#
+
 shapiro.test(precisoes$SVM)
 shapiro.test(precisoes$DT)
 shapiro.test(precisoes$KN)
@@ -127,13 +136,13 @@ shapiro.test(precisoes$RF)
 shapiro.test(precisoes$ML)
 shapiro.test(precisoes$GB)
 
-#
+
 # Para os algoritmos SVM, DT,KN,RF e GB, a homogenidade é verificada, visto que
 # o nível de significância é superior a 0,05.
-#
+
 # Contudo, para o algoritmo ML, o mesmo não se veifica, visto que é menor que 0,05.
 # Podemos então constantar que não existe homogenidade dos dados.
-#
+
 # Assim, podemos concluir que, como uma ou mais hipóteses falham, a variável dependente não é normalmente distribuída.
 # Recorremos então a testes não paramétricos, visto que o uso de ANOVA é impossibilitado.
 
@@ -147,27 +156,33 @@ hist(precisoes$ML)
 hist(precisoes$GB)
 
 # Para conseguirmos então verificar qual das hipóteses se encontra correta, será necessário
-# usar um teste de Kruskal-Wallis.
+# usar um teste de Kruskal-Wallis ou Friedman.
 
-#Após a visualização dos dados foi possível deduzir que não se trata de uma distribuição normal
-#então não podemos aplicar um teste paramétrico, mas sim testes não paramétricos
+# Após a visualização dos dados foi possível deduzir que não se trata de uma distribuição normal
+# então não podemos aplicar um teste paramétrico, mas sim testes não paramétricos
 
 # Assim, podemos concluir que, como uma ou mais hipóteses falham, a variável dependente não é normalmente distribuída.
-# Recorremos então a testes não paramétricos, visto que o uso de ANOVA é impossibilitado.
+# Recorremos então a testes não paramétricos, visto que o uso de ANOVA é impossibilitado
 
 # Para conseguirmos então verificar qual das hipóteses se encontra correta, será necessário
-# usar um teste de Kruskal-Wallis.
+# usar um teste de Friedman uma vez que as amostras estão interligadas entre si
 
-#Vamos aplicar um estudo baseado num teste kruskal
+# Kruskal-Wallis poderia ser uma opção válida se os dados fossem independentes entre si, e como vimos antes a partir da alínea a) e 
+# a explicação das variáveis, não podemos concluir que os dados são independentes
 
-kruskal.test(precisoes)
-# Como p-value = 0.3335 > 0.05 = alfa, não se rejeita H0.
+# O teste Friedman os dados são medidos em uma escala ordinal e as amostras são relacionadas, e, no nosso caso, esta situação é verificada e confirmada
+
+# Vamos aplicar um estudo baseado num teste Friedman
+
+matriz_precisoes <- as.matrix(precisoes)
+friedman.test(matriz_precisoes)
+
+# Como p-value = 0.1212 > 0.05 = alfa, não se rejeita H0.
 
 # Não há evidências estatísticas para afirmar que existem diferenças significativas
 # entre a precisão dos diferentes algoritmos.
 
-
-#c)
+# c)
 # Como foi inferido na alínea anterior não existem evidências estatísticas que afirmem que existam diferenças significativas
 # logo não é possível realizar um estudo post-hoc ao teste efetuado previamente
 
