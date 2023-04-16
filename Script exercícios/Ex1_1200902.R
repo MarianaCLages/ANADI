@@ -150,7 +150,6 @@ producao_amostra <- dados_filtrados_tempo4 %>%
 
 # A data da amostra "2014-02-23" não tem dados disponíveis
 
-
 boxplot(producao_amostra[, 2:3],
         col = c("coral", "lightblue"),
         names = c("Bomba 1", "Bomba 2"),
@@ -166,7 +165,7 @@ boxplot(producao_amostra[, 2:3],
 # Teste t para 2 amostras emparelhadas
 t.test(producao_amostra$`Bomba 1`, producao_amostra$`Bomba 2`, alternative = "greater", paired = TRUE)
 
-# Como p = 2.17e-05 < alfa (0.05), rejeita-se H0.
+# Como p = 2.175e-05 < alfa (0.05), rejeita-se H0.
 # Há evidências estatísticas para afirmar que a média da produção diária de petróleo da bomba 1 é maior do que a da bomba 2 no período de 1-6-2013 e 31-5-2014, com 5% de significância.
 
 
