@@ -264,7 +264,7 @@ boxplot(dadosAgrupados,
         names= numPrecisoes,main = 'Precisão de cada algoritmo', xlab = 'Algoritmos', ylab = 'Precisão')
 
 # Após analisar o boxplot, foi possível confirmar que, de facto, existem outliers significativos,
-# dado que a aceleração é uma variável contínua proveniente de uma medição.
+# dado que a precisão é uma variável contínua proveniente de uma medição.
 
 # Contudo, será feita também a verificação através do cálculo dos valores dos limites inferiores e superiores
 # Para tal, será necessário averiguar se existem valores fora da amplitude dos bigodes.
