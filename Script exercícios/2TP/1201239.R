@@ -1,12 +1,17 @@
+install.packages("caret")
+install.packages("gower")
+library(caret)
+
 # 1. 
 
 # Definição do caminho em que se encontra o script
-setwd("C:/Users/franc/Documents/Repositórios/anadi23/Script exercícios/2TP/")
+setwd("/Users/fredol/Documents/isep/anadi23/Script exercícios/2TP/")
+#/Users/fredol/Documents/isep/anadi23/Script exercícios/2TP
 
 # Importação dos dados
-dataset <- read.csv("ciclismo.csv", header = TRUE)
+dataset <- read.csv("ciclismo.csv", header = TRUE, stringsAsFactors = FALSE)
 
-# Verificação da dimensão do dataset
+# Verificação da dimensão do datasets
 dimensao <- dim(dataset)
 
 # Sumário estatístico dos dados
@@ -20,14 +25,31 @@ dataset$dob <- as.Date(dataset$dob)
 
 # Cálculo da idade. Uso de 365.25 pelos anos bissextos
 dataset$Age <- floor(as.integer(Sys.Date() - dataset$dob) / 365.25)
-ages <- dataset$Age
+age <- dataset$Age
 
 # Print para a consola das idades
-print(ages)
+print(age)
 
 
 # 3. 
 
+# Identify categorical variables for encoding
+categorical_vars <- sapply(data, is.character)
+
+# Specify the variables to encode
+variables <- colnames(data)[categorical_vars]
+
+# Apply one-hot encoding
+encoded_data <- predict(dummyVars("~.", data = data[, variables]), newdata = data)
+
+# Print the encoded data
+print(encoded_data)
+
+
+
+#boxplot(dataset,
+ #       names= nome,main = 'Aceleração por cada grupo de cilindros', xlab = 'Cilindros', ylab = 'Aceleração')
+cor_matrix <- cor(dataset)
 
 
 
@@ -43,6 +65,11 @@ print(missing_count)
 clean_dataset <- na.omit(dataset)
 # Dimensão do "cleared" dataset
 print(dim(clean_dataset))
+
+
+
+
+
 
 # 4.B)
 
