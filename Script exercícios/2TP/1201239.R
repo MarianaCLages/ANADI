@@ -1,12 +1,13 @@
-install.packages("caret")
-install.packages("gower")
+#install.packages("caret")
 library(caret)
 
 # 1. 
 
 # Definição do caminho em que se encontra o script
-setwd("/Users/fredol/Documents/isep/anadi23/Script exercícios/2TP/")
-#/Users/fredol/Documents/isep/anadi23/Script exercícios/2TP
+setwd("C:/Users/franc/Documents/Repositórios/anadi23/Script exercícios/2TP")
+
+#"/Users/fredol/Documents/isep/anadi23/Script exercícios/2TP"
+#"C:/Users/franc/Documents/Repositórios/anadi23/Script exercícios/2TP"
 
 # Importação dos dados
 dataset <- read.csv("ciclismo.csv", header = TRUE, stringsAsFactors = FALSE)
@@ -33,23 +34,21 @@ print(age)
 
 # 3. 
 
-# Identify categorical variables for encoding
-categorical_vars <- sapply(data, is.character)
+# Identificação de variáveis não numéricas
+categorical_vars <- sapply(dataset, is.character)
 
-# Specify the variables to encode
-variables <- colnames(data)[categorical_vars]
+# Especificação das variáveis para fazer encoding
+variables <- colnames(dataset)[categorical_vars]
 
-# Apply one-hot encoding
-encoded_data <- predict(dummyVars("~.", data = data[, variables]), newdata = data)
-
-# Print the encoded data
-print(encoded_data)
+# Aplicar o one-hot encoding
+encoded_data <- predict(dummyVars("~.", data = dataset[, variables]), newdata = dataset)
 
 
-
-#boxplot(dataset,
- #       names= nome,main = 'Aceleração por cada grupo de cilindros', xlab = 'Cilindros', ylab = 'Aceleração')
+boxplot()
 cor_matrix <- cor(dataset)
+
+
+
 
 
 
