@@ -126,10 +126,9 @@ encoded_data <- predict(dummyVars("~.", data = dataset[, variables]), newdata = 
 numeric_cols <- sapply(dataset, is.numeric)
 numeric_data <- dataset[, numeric_cols]
 
-# Calculate the correlation matrix
 cor_matrix <- cor(numeric_data)
 
-# Create a correlation plot with numeric values
+
 corrplot(cor_matrix, method = "number",
          type = "upper", order = "hclust",
          tl.cex = 0.8, tl.col = "black",
