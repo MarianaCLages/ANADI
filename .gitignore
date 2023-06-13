@@ -33,3 +33,7 @@
 
 #hide .blg
 *.blg
+
+#hide .RData and .Rhistory
+*.RData
+*.Rhistory
