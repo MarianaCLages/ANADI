@@ -226,7 +226,7 @@ cat("rmse : ", mlr.rmse)
 # rmse : 0.0536209
 
 # b)
-tree.model = rpart(vo2_results ~ ., method = "anova", data = dataset.train) ; tree.model
+tree.model = rpart(vo2_results ~ altitude_results + hr_results, method = "anova", data = dataset.train) ; tree.model
 rpart.plot(tree.model)
 
 # outra alternativa de visualização da árvore
@@ -339,7 +339,7 @@ cat("rmse : ", nn.rmse)
 # 9.
 # 2 melhores modelos: RLM e Rede neuronal (1 nó interno)
 
-#Criar amostra para cada modelo
+# Criar amostra para cada modelo
 mlr.sample <- c(mlr.mae, mlr.rmse)
 nn.sample <- c(nn.mae, nn.rmse)
 
