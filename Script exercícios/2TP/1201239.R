@@ -1,4 +1,3 @@
-#install.packages("caret")
 library(caret)
 library(ggplot2)
 library(corrplot)
@@ -31,9 +30,6 @@ dataset$dob <- as.Date(dataset$dob)
 dataset$Age <- floor(as.integer(Sys.Date() - dataset$dob) / 365.25)
 age <- dataset$Age
 
-# Print para a consola das idades
-print(age)
-
 
 # 3. 
 
@@ -63,7 +59,7 @@ ggplot(dataset, aes(x = vo2_results, y = hr_results)) +
   ggtitle("VO2 vs. Heartrate ")
 
 
-# 4.A) Não aplicável, creio
+# 4.A) Não aplicável, não há valores NA em qualquer coluna. clean_dataset e dataset são iguais
 
 # Identificação dos valores em falta
 missing_values <- is.na(dataset)
@@ -77,8 +73,8 @@ print(missing_count)
 # Remoção de linhas com valores em falta
 clean_dataset <- na.omit(dataset)
 
-# Dimensão do "cleared" dataset
-print(dim(clean_dataset))
+# Substituição do dataset atual pelo limpo, algo que não é necessário
+#dataset <- clean_dataset
 
 
 # 4.B) Analyzing the boxplot, it is possible to verify outliers on the altitude, vo2, hr
@@ -95,20 +91,6 @@ dataset <- cbind(dataset, age)
 
 # 4.D)
 
-numeric_cols <- sapply(dataset, is.numeric)
-numeric_data <- dataset[, numeric_cols]
-
-# Min-Max Scaling entre [0,1]
-scaled_data <- as.data.frame(lapply(numeric_data, function(x) {
-  (x - min(x)) / (max(x) - min(x))
-}))
-
-# Atribuição dos valores para o dataset original
-dataset[, numeric_cols] <- scaled_data
-
-
-# 5.
-
 ########################## ONE-HOT ENCODING ####################################
 
 # Identificação de variáveis não numéricas
@@ -122,6 +104,28 @@ encoded_data <- predict(dummyVars("~.", data = dataset[, variables]), newdata = 
 
 ################################################################################
 
+
+
+########################## MIN-MAX Normalization ####################################
+
+# Remover as colunas de gender e Training Camp, visto que vão ser adicionadas de seguida
+dataset <- dataset[, c("altitude_results", "vo2_results", "hr_results", "age")]
+
+numeric_cols <- sapply(dataset, is.numeric)
+numeric_data <- dataset[, numeric_cols]
+
+# Min-Max Scaling
+scaled_data <- as.data.frame(lapply(numeric_data, function(y) {
+  (y - min(y)) / (max(y) - min(y))
+}))
+
+# Atribuição dos valores para o dataset original
+dataset <- cbind(encoded_data, scaled_data)
+
+################################################################################
+
+
+# 5.
 
 numeric_cols <- sapply(dataset, is.numeric)
 numeric_data <- dataset[, numeric_cols]
