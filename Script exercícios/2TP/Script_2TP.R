@@ -11,20 +11,19 @@ library(rpart)
 library(rpart.plot)
 library(neuralnet)
 
-# 1.
-# Definição do caminho em que se encontra o ficheiro
-getwd()
-#setwd("C:/Users/franc/Documents/Repositórios/anadi23/Script exercícios/Script_TP2")
-setwd("C:/Users/maria/Desktop/ISEP/3ºano/2ºsemestre/ANADI/Trabalho2")
+# 1. 
 
-#"/Users/fredol/Documents/isep/anadi23/Script exercícios/Script_TP2"
-#"C:/Users/franc/Documents/Repositórios/anadi23/Script exercícios/Script_TP2"
+# Definição do caminho em que se encontra o script
+setwd("C:/Users/franc/Documents/Repositórios/anadi23/Script exercícios/2TP")
 
-# Importação dos dados do ficheiro ciclismo.csv
+#"/Users/fredol/Documents/isep/anadi23/Script exercícios/2TP"
+#"C:/Users/franc/Documents/Repositórios/anadi23/Script exercícios/2TP"
+
+# Importação dos dados
 dataset <- read.csv("ciclismo.csv", header = TRUE, stringsAsFactors = FALSE)
 dataset <- dataset[, !colnames(dataset) %in% "ID"]
 
-# Verificação da dimensão do dataset
+# Verificação da dimensão do datasets
 dimensao <- dim(dataset)
 
 # Sumário estatístico dos dados
@@ -32,22 +31,24 @@ summary(dataset)
 
 
 # 2.
-# Conversão da data de nascimento para o tipo Date
+
+# Conversão da data de nascimento para um tipo de Data no R
 dataset$dob <- as.Date(dataset$dob)
 
-# Cálculo da idade. Uso de 365.25 devido aos anos bissextos (a cada 4 anos)
+# Cálculo da idade. Uso de 365.25 pelos anos bissextos a cada 4
 dataset$Age <- floor(as.integer(Sys.Date() - dataset$dob) / 365.25)
 age <- dataset$Age
 
 
-# 3.
+# 3. 
+
 # Seleção de atributos numericos
 numerical_vars <- sapply(dataset, is.numeric)
   
 # Boxplot para altitude, vo2, hr e age
 boxplot(dataset[, numerical_vars], col = "lightblue", main = "O2 Related Attributes")
 
-# Scatter plots (Gráfico de dispersão) para os diferentes atributos e como se relacionam
+# Scatter Plots para os diferentes atributos e como se relacionam
 ggplot(dataset, aes(x = altitude_results, y = vo2_results)) +
   geom_point() +
   geom_smooth(method = "lm", se = FALSE) +
@@ -67,7 +68,7 @@ ggplot(dataset, aes(x = vo2_results, y = hr_results)) +
   ggtitle("VO2 vs. Heartrate ")
 
 
-# 4.A) Não aplicável, creio
+# 4.A) Não aplicável, não há valores NA em qualquer coluna. clean_dataset e dataset são iguais
 
 # Identificação dos valores em falta
 missing_values <- is.na(dataset)
@@ -81,14 +82,15 @@ print(missing_count)
 # Remoção de linhas com valores em falta
 clean_dataset <- na.omit(dataset)
 
-# Dimensão do "cleared" dataset
-print(dim(clean_dataset))
+# Substituição do dataset atual pelo limpo, algo que não é necessário
+#dataset <- clean_dataset
 
 
 # 4.B) Analyzing the boxplot, it is possible to verify outliers on the altitude, vo2, hr
 
 
-# 4.C)
+# 4.C) 
+
 # Manter as colunas desejadas
 dataset <- dataset[, c("gender", "Winter.Training.Camp", "altitude_results", "vo2_results", "hr_results")]
 
@@ -97,24 +99,7 @@ dataset <- cbind(dataset, age)
 
 
 # 4.D)
-numeric_cols <- sapply(dataset, is.numeric)
-numeric_data <- dataset[, numeric_cols]
 
-# Verify data before norm.
-summary(dataset)
-
-# Min-Max Scaling entre [0,1]
-data.norm <- as.data.frame(lapply(numeric_data, function(y) {
-  (y - min(y)) / (max(y) - min(y))
-}))
-
-# Atribuição dos valores para o dataset original
-dataset[, numeric_cols] <- data.norm
-
-summary(dataset)
-
-
-# 5.
 ########################## ONE-HOT ENCODING ####################################
 
 # Identificação de variáveis não numéricas
@@ -128,18 +113,40 @@ encoded_data <- predict(dummyVars("~.", data = dataset[, variables]), newdata = 
 
 ################################################################################
 
-# É NECESSÁRIO? (JÁ TINHA SIDO FEITO NA ALINEA ANTERIOR)
+
+
+########################## MIN-MAX Normalization ####################################
+
+# Remover as colunas de gender e Training Camp, visto que vão ser adicionadas de seguida
+dataset <- dataset[, c("altitude_results", "vo2_results", "hr_results", "age")]
+
 numeric_cols <- sapply(dataset, is.numeric)
 numeric_data <- dataset[, numeric_cols]
 
-# Calculate the correlation matrix
+# Min-Max Scaling
+scaled_data <- as.data.frame(lapply(numeric_data, function(y) {
+  (y - min(y)) / (max(y) - min(y))
+}))
+
+# Atribuição dos valores para o dataset original
+dataset <- cbind(encoded_data, scaled_data)
+
+################################################################################
+
+
+# 5.
+
+numeric_cols <- sapply(dataset, is.numeric)
+numeric_data <- dataset[, numeric_cols]
+
 cor_matrix <- cor(numeric_data)
 
-# Create a correlation plot with numeric values
+
 corrplot(cor_matrix, method = "number",
          type = "upper", order = "hclust",
          tl.cex = 0.8, tl.col = "black",
          diag = FALSE)
+
 
 
 # 6.
