@@ -95,7 +95,7 @@ rm("clean_dataset")
 # 4.C) 
 
 # Manter as colunas desejadas
-dataset <- dataset[, c("gender", "Winter.Training.Camp", "altitude_results", "vo2_results", "hr_results")]
+dataset <- dataset[, c("gender", "Pro.level", "Winter.Training.Camp", "altitude_results", "vo2_results", "hr_results")]
 
 # Adicionar a idade previamente calculada
 dataset <- cbind(dataset, age)
@@ -145,7 +145,7 @@ rm("numeric_data", "encoded_data", "scaled_data")
 numeric_cols <- sapply(dataset, is.numeric)
 numeric_data <- dataset[, numeric_cols]
 
-cor_matrix <- cor(numeric_data)
+cor_matrix <- cor(dataset)
 
 
 corrplot(cor_matrix, method = "number",
