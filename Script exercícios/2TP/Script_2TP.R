@@ -85,6 +85,9 @@ clean_dataset <- na.omit(dataset)
 # Substituição do dataset atual pelo limpo, algo que não é necessário
 #dataset <- clean_dataset
 
+# Remoção do clean_dataset
+rm("clean_dataset")
+
 
 # 4.B) Analyzing the boxplot, it is possible to verify outliers on the altitude, vo2, hr
 
@@ -131,6 +134,9 @@ scaled_data <- as.data.frame(lapply(numeric_data, function(y) {
 # Atribuição dos valores para o dataset original
 dataset <- cbind(encoded_data, scaled_data)
 
+# Limpeza dos dados com normalizacao aplicada
+rm("numeric_data", "encoded_data", "scaled_data")
+
 ################################################################################
 
 
@@ -147,7 +153,7 @@ corrplot(cor_matrix, method = "number",
          tl.cex = 0.8, tl.col = "black",
          diag = FALSE)
 
-
+rm("numeric_data")
 
 # 6.
 sample <- sample(c(TRUE, FALSE), nrow(dataset), replace = TRUE, prob = c(0.70, 0.30))
