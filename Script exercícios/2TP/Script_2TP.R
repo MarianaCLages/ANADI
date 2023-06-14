@@ -16,12 +16,9 @@ library(class)
 
 # 1.
 # Definição do caminho em que se encontra o script
-#setwd("C:/Users/franc/Documents/Repositórios/anadi23/Script exercícios/2TP")
+setwd("C:/Users/franc/Documents/Repositórios/anadi23/Script exercícios/2TP")
 #setwd("C:/Users/maria/Desktop/ISEP/3ºano/2ºsemestre/ANADI/anadi23/Script exercícios/2TP")
-setwd("C:/Users/MiguelJordão(1201487/Desktop/ANADI/anadi23/Script exercícios/2TP")
-
-#"/Users/fredol/Documents/isep/anadi23/Script exercícios/2TP"
-#"C:/Users/franc/Documents/Repositórios/anadi23/Script exercícios/2TP"
+#setwd("C:/Users/MiguelJordão(1201487/Desktop/ANADI/anadi23/Script exercícios/2TP")
 
 # Importação dos dados
 dataset <- read.csv("ciclismo.csv", header = TRUE, stringsAsFactors = FALSE)
