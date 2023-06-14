@@ -69,7 +69,7 @@ ggplot(dataset, aes(x = vo2_results, y = hr_results)) +
 
 
 # 4.
-# a) Não aplicável, não há valores NA em qualquer coluna. clean_dataset e dataset são iguais
+# A) Não aplicável, não há valores NA em qualquer coluna. clean_dataset e dataset são iguais
 
 # Identificação dos valores em falta
 missing_values <- is.na(dataset)
@@ -89,38 +89,46 @@ clean_dataset <- na.omit(dataset)
 # Remoção do clean_dataset
 rm("clean_dataset")
 
-# b) Analyzing the boxplot, it is possible to verify outliers on the altitude, vo2, hr
 
-# c)
+# B) Analyzing the boxplot, it is possible to verify outliers on the altitude, vo2, hr
+
+
+# C)
 # Manter as colunas desejadas
 dataset <- dataset[, c("gender", "Pro.level", "Winter.Training.Camp", "altitude_results", "vo2_results", "hr_results")]
 
 # Adicionar a idade previamente calculada
 dataset <- cbind(dataset, age)
 
-# d)
-########################## ONE-HOT ENCODING ####################################
+
+# D)
+
+########################## One Label Encoding ####################################
 
 # Identificação de variáveis não numéricas
 categorical_vars <- sapply(dataset, is.character)
 
-# Especificação das variáveis para fazer encoding
+# Especificação de variáveis eligíveis para one-label encoding
 variables <- colnames(dataset)[categorical_vars]
 
-# Aplicar o one-hot encoding
-encoded_data <- predict(dummyVars("~.", data = dataset[, variables]), newdata = dataset)
+encoded_data <- dataset[, categorical_vars]
+
+# Aplicação do encoding
+for (var in variables) {
+  encoded_data[[var]] <- as.integer(as.factor(encoded_data[[var]]))
+  encoded_data[[var]] <- encoded_data[[var]] - 1 
+}
 
 ################################################################################
 
 
-
 ########################## MIN-MAX Normalization ####################################
 
-# Remover as colunas de gender e Training Camp, visto que vão ser adicionadas de seguida
+# Remover as colunas de Gender, Pro.level e Winter.Training.Camp, vão ser adicionadas de seguida
 dataset <- dataset[, c("altitude_results", "vo2_results", "hr_results", "age")]
 
-numeric_cols <- sapply(dataset, is.numeric)
-numeric_data <- dataset[, numeric_cols]
+#numeric_cols <- sapply(dataset, is.numeric)
+numeric_data <- dataset
 
 # Min-Max Scaling
 scaled_data <- as.data.frame(lapply(numeric_data, function(y) {
@@ -137,6 +145,7 @@ rm("numeric_data", "encoded_data", "scaled_data")
 
 
 # 5.
+
 numeric_cols <- sapply(dataset, is.numeric)
 numeric_data <- dataset[, numeric_cols]
 
