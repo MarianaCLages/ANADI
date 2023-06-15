@@ -16,9 +16,9 @@ library(class)
 
 # 1.
 # Definição do caminho em que se encontra o script
-setwd("C:/Users/franc/Documents/Repositórios/anadi23/Script exercícios/2TP")
+#setwd("C:/Users/franc/Documents/Repositórios/anadi23/Script exercícios/2TP")
 #setwd("C:/Users/maria/Desktop/ISEP/3ºano/2ºsemestre/ANADI/anadi23/Script exercícios/2TP")
-#setwd("C:/Users/MiguelJordão(1201487/Desktop/ANADI/anadi23/Script exercícios/2TP")
+setwd("C:/Users/MiguelJordão(1201487/Desktop/ANADI/anadi23/Script exercícios/2TP")
 
 # Importação dos dados
 dataset <- read.csv("ciclismo.csv", header = TRUE, stringsAsFactors = FALSE)
@@ -150,6 +150,12 @@ dataset <- cbind(labeled_data,encoded_data, scaled_data)
 
 # Limpeza dos dados com normalizacao aplicada
 rm("numeric_data", "encoded_data", "scaled_data")
+
+# Corrigir colunas com um espaço a mais
+
+colnames(dataset)[4:8] <- c("TeamGroupA","TeamGroupB","TeamGroupC","TeamGroupD","TeamGroupE")
+colnames(dataset)[14] <- "BackgroundTimeTrial"
+colnames(dataset)[19:20] <- c("ContinentNorthAmerica","ContinentSouthAmerica")
 
 ################################################################################
 
@@ -372,75 +378,54 @@ t.test(mlr.sample, nn.sample)
 # Logo, conclui-se que os resultados obtidos para os dois modelos são estatisticamente significativos.
 # O mais eficiente é aquele que apresenta um MAE e um RMSE menor, ou seja, o modelo da regressão linear múltipla.
 
-# Classificação
+###################################################### Classificação ########################################################
 
-# 3
+########## 3
 
 sample <- sample(c(TRUE, FALSE), nrow(dataset), replace = TRUE, prob = c(0.70, 0.30))
 
-dataset.train <- dataset[sample,]
-dataset.test <- dataset[!sample,]
+# Modelo                           | MAE        | RMSE       |
+# Rede neuronal (6,2 nós)          | 0.1109829  | 0.2822349  |
+# Rede neuronal (9,3 nós)          | 0.1109829  | 0.2822349  |
+# Rede neuronal (3,1 nós)          | 0.1016662  | 0.2591252  |
+# Rede neuronal (10,6,2 nós)       | 0.09024785 | 0.2538431  |
+# Rede neuronal (16,10.6,2) nós)   | 0.07059447 | 0.2534121  |
+# Rede neuronal (20,16,10.6,2) nós)| 0.06134385 | 0.2342042  |
+# Rede neuronal (1 nó)             | 0.1583033  | 0.2870171  |
 
-#1 internal node
-numnodes <- 1
+########### NN ###########
 
+# Internal nodes
+numnodes <- c(20,16,10.6,2)
+
+data.train <- dataset[sample,]
+data.tst <- dataset[-sample, ]
+
+#Modelo NN
 nn.model.ex.3 <- 
   neuralnet(
     gender ~ .,
-    data = dataset.train,
+    data = data.train,
     hidden = numnodes
   )
 plot(nn.model.ex.3)
 
-nn.model.ex.3$result.matrix
+#Pred NN
+nn.pred.ex.3 = predict(nn.model.ex.3, data.tst)
+dif = data.tst$gender - nn.pred.ex.3
 
-dif = dataset.test$gender - (
-    dataset.test$Pro.level +
-    dataset.test$Winter.Training.Camp +
-    dataset.test$altitude_results +
-    dataset.test$vo2_results +
-    dataset.test$hr_results +
-    dataset.test$age
-) ; dif
+# MAE
+nn.mae.ex.3 = mean(abs(dif))
+cat("mae : ", nn.mae.ex.3)
 
-#MAE
-nn.model.ex.3.mae = mean(abs(dif))
-cat("mae : ", nn.model.ex.3.mae)
+# RMSE
+nn.rmse.ex.3 = sqrt(mean(dif^2))
+cat("rmse : ", nn.rmse.ex.3)
 
-#mae :  3.096815
+########## KNN ###########
 
-#RMSE
-
-nn.model.ex.3.rmse = sqrt(mean(dif^2))
-cat("rmse : ", nn.model.ex.3.rmse)
-
-#rmse : 3.269947
-
-#Knn
-
-sample <- sample(c(TRUE, FALSE), nrow(dataset), replace = TRUE, prob = c(0.70, 0.30))
-
-dataset.train <- dataset[sample,]
-dataset.test <- dataset[-sample,]
-
-train_gender <- dataset[sample, "gender"]
-test_gender <- dataset[-sample, "gender"]
-
-pr <- knn(dataset.train,dataset.test,cl=train_gender,k=5); pr
-tab <- table(pr, test_gender)
-
-accuracy <- function(x){sum(diag(x)/(sum(rowSums(x)))) * 100}
-accuracy(tab)
-
-# [1] 100
-
-predictions = factor(pr, levels=levels(dataset.train$gender))
-confusionMatrix(as.factor(predictions), dataset.train$gender)
-
-#### 2nd way ####
-
-data.train <- dataset[sample,]
-data.tst <- dataset[-sample,]
+data.train <- dataset[sample, -which(names(dataset) == "gender")]
+data.tst <- dataset[-sample, -which(names(dataset) == "gender")]
 
 train_labels <- dataset[sample, "gender"]
 tst_labels <- dataset[-sample, "gender"]
@@ -463,6 +448,10 @@ resNeigh<-data.frame(k,accuracy)
 resNeigh[resNeigh$accuracy==max(resNeigh$accuracy), ]   
 plot(resNeigh$k,resNeigh$accuracy)
 
+#   k  accuracy
+#1 1 0.8628629
+# K=1
+
 #Plot Max accuracy
 resNeigh[resNeigh$accuracy == max(resNeigh$accuracy), ]
 k[which.max(accuracy)]
@@ -476,19 +465,29 @@ plot(
   )
 )
 
-# 1 Todos os k deram accuracy alta... usar k=25 for example
+# a)
 
-library(rpart)
+# NN model -> c(16,10.6,2)
+# KNN model -> K=1
 
-cvf <- 10
+# K = X           |  NN Mean   | NN SD      | KNN Mean |  KNN SD  |
+# K = 10          | 0.7901825  | 0.06211227 |0.5165388 |0.05987278|
+# K = 12          | 0.7820203  | 0.02880992 |0.5210406 |0.04131759|
+# K = 14          | 0.7617719  | 0.06211227 |0.5151280 |0.04372504|
+# K = 16          | 0.04021649 | 0.02880992 |0.5210406 |0.04131759|
+
+
+# K-Cross info
+cvf <- 13
 folds <- sample(1:cvf, nrow(dataset), replace = TRUE)
 
 # Fold size
 table(folds)
 
+# Aux variáveis
 accuracy <- matrix(nrow = cvf, ncol = 2)
-k <- 25
-numnodes <- 1
+k <- 1
+numnodes <- c(16,10.6,2)
 
 for (i in 1:cvf) {
   train.cv <- dataset[folds != i, ]
@@ -504,7 +503,7 @@ for (i in 1:cvf) {
   neuralnet.pred <- compute(neuralnet.model, test.cv[, -sample])$net.result
   neuralnet.pred <- ifelse(neuralnet.pred > 0.5, 1, 0)  # Convert probabilities to binary predictions
   cfmatneuralnet <- table(tst_labels, neuralnet.pred)
-
+  
   accuracy[i, ] <- c(
     sum(diag(cfmatknn))/sum(cfmatknn),
     sum(diag(cfmatneuralnet))/sum(cfmatneuralnet)
@@ -521,7 +520,7 @@ apply(accuracy, 2, mean)
 apply(accuracy, 2, sd)
 
 #Sd
-# [1] 0.04230348 0.12573381
+# [1] 0.06342315 0.04830902
 
 ######
 # knn : mean= 0.7540967 & sd = 0.04230348
@@ -567,7 +566,7 @@ sensitivity <- matrix(nrow = cvf, ncol = 2)
 specificity <- matrix(nrow = cvf, ncol = 2)
 f1 <- matrix(nrow = cvf, ncol = 2)
 k <- 25
-numnodes <- 1
+numnodes <- c(20,16,10.6,2)
 
 for (i in 1:cvf) {
   train.cv <- dataset[folds != i, ]
@@ -665,4 +664,3 @@ cat("Best Model Based on Accuracy:", best_accuracy_model, "\n")
 cat("Best Model Based on Sensitivity:", best_sensitivity_model, "\n")
 cat("Best Model Based on Specificity:", best_specificity_model, "\n")
 cat("Best Model Based on F1:", best_f1_model, "\n")
-
