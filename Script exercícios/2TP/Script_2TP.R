@@ -94,7 +94,7 @@ rm("clean_dataset")
 
 # C)
 # Manter as colunas desejadas
-dataset <- dataset[, c("gender", "Pro.level", "Winter.Training.Camp", "altitude_results", "vo2_results", "hr_results")]
+dataset <- dataset[, c("gender", "Team", "Background", "Pro.level", "Winter.Training.Camp", "altitude_results", "vo2_results", "hr_results", "Continent")]
 
 # Adicionar a idade previamente calculada
 dataset <- cbind(dataset, age)
@@ -102,21 +102,32 @@ dataset <- cbind(dataset, age)
 
 # D)
 
-########################## One Label Encoding ####################################
+########################## ONE-LABEL ENCODING ##################################
+
+dataset$gender <- as.numeric(as.factor(dataset$gender)) - 1
+dataset$Pro.level <- as.numeric(as.factor(dataset$Pro.level)) - 1
+dataset$Winter.Training.Camp <- as.numeric(as.factor(dataset$Winter.Training.Camp)) - 1
+
+labeled_data <- data.frame(
+  gender = dataset$gender,
+  Pro.level = dataset$Pro.level,
+  Winter.Training.Camp = dataset$Winter.Training.Camp
+)
+
+
+################################################################################
+
+
+########################## ONE-HOT ENCODING ####################################
 
 # Identificação de variáveis não numéricas
 categorical_vars <- sapply(dataset, is.character)
 
-# Especificação de variáveis eligíveis para one-label encoding
+# Especificação das variáveis para fazer encoding
 variables <- colnames(dataset)[categorical_vars]
 
-encoded_data <- dataset[, categorical_vars]
-
-# Aplicação do encoding
-for (var in variables) {
-  encoded_data[[var]] <- as.integer(as.factor(encoded_data[[var]]))
-  encoded_data[[var]] <- encoded_data[[var]] - 1 
-}
+# Aplicar o one-hot encoding
+encoded_data <- predict(dummyVars("~.", data = dataset[, variables]), newdata = dataset)
 
 ################################################################################
 
@@ -135,7 +146,7 @@ scaled_data <- as.data.frame(lapply(numeric_data, function(y) {
 }))
 
 # Atribuição dos valores para o dataset original
-dataset <- cbind(encoded_data, scaled_data)
+dataset <- cbind(labeled_data,encoded_data, scaled_data)
 
 # Limpeza dos dados com normalizacao aplicada
 rm("numeric_data", "encoded_data", "scaled_data")
