@@ -17,6 +17,7 @@ library(class)
 # 1.
 # Definição do caminho em que se encontra o script
 #setwd("C:/Users/franc/Documents/Repositórios/anadi23/Script exercícios/2TP")
+#setwd("/Users/fredol/Documents/isep/anadi23/Script exercícios/2TP")
 #setwd("C:/Users/maria/Desktop/ISEP/3ºano/2ºsemestre/ANADI/anadi23/Script exercícios/2TP")
 setwd("C:/Users/MiguelJordão(1201487/Desktop/ANADI/anadi23/Script exercícios/2TP")
 
@@ -25,7 +26,7 @@ dataset <- read.csv("ciclismo.csv", header = TRUE, stringsAsFactors = FALSE)
 dataset <- dataset[, !colnames(dataset) %in% "ID"]
 
 # Verificação da dimensão do datasets
-dimensao <- dim(dataset)
+dimensao_dataset <- dim(dataset)
 
 # Sumário estatístico dos dados
 summary(dataset)
@@ -98,6 +99,7 @@ dataset <- dataset[, c("gender", "Team", "Background", "Pro.level", "Winter.Trai
 
 # Adicionar a idade previamente calculada
 dataset <- cbind(dataset, age)
+rm("age")
 
 
 # D)
@@ -129,6 +131,8 @@ variables <- colnames(dataset)[categorical_vars]
 # Aplicar o one-hot encoding
 encoded_data <- predict(dummyVars("~.", data = dataset[, variables]), newdata = dataset)
 
+rm("categorical_vars", "variables")
+
 ################################################################################
 
 
@@ -149,7 +153,8 @@ scaled_data <- as.data.frame(lapply(numeric_data, function(y) {
 dataset <- cbind(labeled_data,encoded_data, scaled_data)
 
 # Limpeza dos dados com normalizacao aplicada
-rm("numeric_data", "encoded_data", "scaled_data")
+rm("numeric_data", "labeled_data","encoded_data", "scaled_data")
+
 
 # Corrigir colunas com um espaço a mais
 
@@ -162,17 +167,19 @@ colnames(dataset)[19:20] <- c("ContinentNorthAmerica","ContinentSouthAmerica")
 
 # 5.
 
-numeric_cols <- sapply(dataset, is.numeric)
-numeric_data <- dataset[, numeric_cols]
+# Cores para a matriz de correlação
+col_palette <- colorRampPalette(c("#FF8080", "#FFB3B3", "#FAFAFA", "#BCCCFF", "#663366"))
 
-cor_matrix <- cor(dataset)
+# Matriz de correlação em si
+correlation_matrix <- cor(dataset)
 
-corrplot(cor_matrix, method = "number",
-         type = "upper", order = "hclust",
-         tl.cex = 0.8, tl.col = "black",
-         diag = FALSE)
-
-rm("numeric_data")
+#Plot com a representação da matriz
+corrplot(correlation_matrix, method = "color", 
+         col = col_palette(200),
+         order = "hclust",
+         addCoef.col = "black",
+         tl.cex = 0.3, tl.col = "black",
+         diag = TRUE)
 
 
 # 6.
