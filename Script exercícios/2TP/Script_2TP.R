@@ -387,6 +387,188 @@ t.test(mlr.sample, nn.sample)
 
 ###################################################### Classificação ########################################################
 
+# 1.
+
+# Criar um dataset limpo para incluir apenas os campos com correlação elevada com o Pro.level
+clean_dataset <- dataset[c("gender","Pro.level", "altitude_results", "vo2_results", "hr_results")]
+index <- sample(1:nrow(dataset), 0.7 * nrow(dataset))
+
+# Criação do dataset de treino e teste
+clean_dataset.train <- clean_dataset[index,]
+clean_dataset.test <- clean_dataset[-index,]
+
+
+####################################### Modelo de Árvore de Decisão ####################################
+
+# Elaboração do modelo da Decision Tree
+model_dt <- rpart(
+  Pro.level~ gender + altitude_results + vo2_results + hr_results,
+  method="anova", data = clean_dataset.train)
+
+# Representação do modelo sob a forma de plot
+rpart.plot(model_dt)
+predictions_dt <- predict(model_dt,  clean_dataset.test)
+predictions_dt <- ifelse(predictions_dt > 0.5, "1", "0")
+
+# Cálculo da precisão do modelo
+accuracy_dt <- sum(predictions_dt == clean_dataset.test$Pro.level) / length(clean_dataset.test$Pro.level) * 100
+
+########################################################################################################
+
+####################################### Modelo de Rede Neuronal ########################################
+
+# 2 Layers, com 6 e 2 nós, respetivamente
+numnodes <- 1#c(6,2)
+
+# Modelo de rede neural
+model_nn <- neuralnet(
+  Pro.level~ gender + altitude_results + vo2_results + hr_results,
+  hidden = numnodes, data = clean_dataset.train)
+
+# Representação do modelo sob a forma de plot
+plot(model_nn)
+predictions_nn <- predict(model_nn, clean_dataset.test)
+predictions_nn <- ifelse(predictions_nn > 0.5, "1", "0")
+
+# Cálculo da precisão do modelo
+accuracy_nn <- sum(predictions_nn == clean_dataset.test$Pro.level) / length(clean_dataset.test$Pro.level) * 100
+
+########################################################################################################
+
+####################################### Modelo de k-vizinhos-mais-próximos #######################################
+
+# Averiguação do melhor k
+k <- c()
+accuracy <- c()
+for (i in seq(1, 50, 2)){
+  
+  knn.pred <- knn(train = clean_dataset.train[, -which(names(clean_dataset) == "Pro.level")],
+                  test = clean_dataset.test[, -which(names(clean_dataset) == "Pro.level")],
+                  cl = clean_dataset.train$Pro.level, k=i) 
+  
+  predictions_knn <- as.factor(knn.pred)
+  
+  cfmatrix <- table(clean_dataset.test$Pro.level, knn.pred)
+  
+  accuracy <- c(accuracy, sum(diag(cfmatrix))/sum(cfmatrix))
+  
+  k <- c(k,i)
+}
+
+# Verificação da precisão máxima
+resNeigh<-data.frame(k,accuracy)
+resNeigh[resNeigh$accuracy==max(resNeigh$accuracy), ]
+plot(resNeigh$k,resNeigh$accuracy)
+
+# Precisão máxima para k = 41
+
+# Elaboração do modelo
+model_knn <- knn(train = clean_dataset.train[, -which(names(clean_dataset) == "Pro.level")],
+                 test = clean_dataset.test[, -which(names(clean_dataset) == "Pro.level")],
+                 cl = clean_dataset.train$Pro.level,
+                 k = 41) #resNeigh[resNeigh$accuracy==max(resNeigh$accuracy), ][1] - Uso Dinamico provocava erro
+
+# Confusion Matrix
+cfmatrix <- table(clean_dataset.test$Pro.level, model_knn)
+
+# Cálculo da prediction
+predictions_knn <- as.factor(model_knn)
+
+# Cálculo da precisão
+accuracy_knn <- sum(diag(cfmatrix))/sum(cfmatrix) * 100
+
+##################################################################################################################
+
+# 1.A)
+
+# Definido o número de folds (k)
+cvf <- 10
+folds <- sample(1:cvf, nrow(dataset), replace = TRUE)
+numnodes <- 1#c(6,2)
+
+# Realize k-fold cross validation
+
+accuracy <- matrix(nrow = cvf, ncol = 2)
+
+for (i in 1:cvf) {
+  
+  # Separe os dados em treinamento e teste usando os folds
+  dataset.train <- dataset[folds != i, ]
+  dataset.test <- dataset[folds == i, ]
+  
+  # Trino do Modelo de rede neural
+  model_nn <- neuralnet(
+    Pro.level~ gender + altitude_results + vo2_results + hr_results,
+    hidden = numnodes, data = dataset.train)
+  
+  # Fazer as previsões através do modelo de rede neuronal
+  predictions_nn <- predict(model_nn, dataset.test)
+  predictions_nn <- ifelse(predictions_nn > 0.5, "1", "0")
+  
+  # Cálculo d<a taxa de precisão da rede neuronal
+  accuracy_nn <- sum(predictions_nn == dataset.test$Pro.level) / length(dataset.test$Pro.level) * 100
+  
+  
+  
+  # Treine o modelo KDD
+  model_knn <- knn(train = dataset.train[, -which(names(dataset.train) == "Pro.level")],
+                   test = dataset.test[, -which(names(dataset.test) == "Pro.level")],
+                   cl = dataset.train$Pro.level,
+                   k = 41)
+  
+  # Cálculo da Confusion Matrix
+  cfmatrix <- table(dataset.test$Pro.level, model_knn)
+  
+  # Cálculo da prediction
+  predictions_knn <- as.factor(model_knn)
+  
+  # Cálculo da precisão
+  accuracy_knn <- sum(diag(cfmatrix))/sum(cfmatrix) * 100
+  
+  # Disposição em Array para efetuar os cálculos seguintes
+  accuracy[i, ] <- c( accuracy_nn,
+                      accuracy_knn) 
+}
+
+accuracy
+
+apply(accuracy, 2, mean)
+apply(accuracy, 2, sd)
+
+# 1.B)
+# Este modelo não realiza um processo explícito de treinamento, ou seja, ele armazena os dados de treino e
+# efetua cálculos sob demanda para cada previsão. 
+# Isso pode resultar num tempo de treino mais rápido, mas um tempo de previsão mais longo, 
+# pois é necessário calcular a distância entre os pontos de treino e o novo ponto para cada previsão.
+
+
+# 1.C)
+
+# Efetuar o t-test
+t_test <- t.test(accuracy[, 1], accuracy[, 2], paired = TRUE)
+
+# Extrair o p-value após a realização do teste
+p_value <- t_test$p.value
+
+# Verificação do nível de significância
+alpha <- 0.05
+
+# Comparação do p-value com a significância escolhida
+if (p_value < alpha) {
+  if (mean(accuracy[, 1]) > mean(accuracy[, 2])) {
+    best_model <- "Neural Network"
+  } else {
+    best_model <- "K-Nearest Neighbors"
+  }
+  result <- paste("There is a significant difference between the models.",
+                  "The", best_model, "performs better.")
+} else {
+  result <- "There is no significant difference between the models."
+}
+
+result
+
+
 ########## 3
 
 sample <- sample(c(TRUE, FALSE), nrow(dataset), replace = TRUE, prob = c(0.70, 0.30))
