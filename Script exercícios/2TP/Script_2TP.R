@@ -18,8 +18,8 @@ library(class)
 # Definição do caminho em que se encontra o script
 #setwd("C:/Users/franc/Documents/Repositórios/anadi23/Script exercícios/2TP")
 #setwd("/Users/fredol/Documents/isep/anadi23/Script exercícios/2TP")
-#setwd("C:/Users/maria/Desktop/ISEP/3ºano/2ºsemestre/ANADI/anadi23/Script exercícios/2TP")
-setwd("C:/Users/MiguelJordão(1201487/Desktop/ANADI/anadi23/Script exercícios/2TP")
+setwd("C:/Users/maria/Desktop/ISEP/3ºano/2ºsemestre/ANADI/anadi23/Script exercícios/2TP")
+#setwd("C:/Users/MiguelJordão(1201487/Desktop/ANADI/anadi23/Script exercícios/2TP")
 
 # Importação dos dados
 dataset <- read.csv("ciclismo.csv", header = TRUE, stringsAsFactors = FALSE)
@@ -103,7 +103,6 @@ rm("age")
 
 
 # D)
-
 ########################## ONE-LABEL ENCODING ##################################
 
 dataset$gender <- as.numeric(as.factor(dataset$gender)) - 1
@@ -157,16 +156,13 @@ rm("numeric_data", "labeled_data","encoded_data", "scaled_data")
 
 
 # Corrigir colunas com um espaço a mais
-
 colnames(dataset)[4:8] <- c("TeamGroupA","TeamGroupB","TeamGroupC","TeamGroupD","TeamGroupE")
 colnames(dataset)[14] <- "BackgroundTimeTrial"
 colnames(dataset)[19:20] <- c("ContinentNorthAmerica","ContinentSouthAmerica")
 
 ################################################################################
 
-
 # 5.
-
 # Cores para a matriz de correlação
 col_palette <- colorRampPalette(c("#FF8080", "#FFB3B3", "#FAFAFA", "#BCCCFF", "#663366"))
 
@@ -183,16 +179,19 @@ corrplot(correlation_matrix, method = "color",
 
 
 # 6.
+# Criar a amostra dos dados em treino e teste
 sample <- sample(c(TRUE, FALSE), nrow(dataset), replace = TRUE, prob = c(0.70, 0.30))
 
 dataset.train <- dataset[sample,]
 dataset.test <- dataset[!sample,]
 
+# Resumo estatístico dos valores da variável altitude_results nos conjuntos de treino e treino
 summary(dataset.train$altitude_results)
 summary(dataset.test$altitude_results)
 
 # a)
 # Criar um modelo de regressão linear simples
+# A variável dependente é altitude_results e a variável independente é hr_results
 slr.model <- lm(altitude_results ~ hr_results, data = dataset.train)
 slr.model # Equação: altitude_results = 0.02919 + 0.86157*hr_results
 
@@ -203,34 +202,43 @@ ggplot(slr.model, aes(hr_results, altitude_results)) +
   geom_segment(aes(xend = hr_results, yend= .fitted), color = "red")
 
 # c)
+# Realizar previsão dos valores utilizando o modelo de regressão linear simples
 slr.pred = predict(slr.model, dataset.test) ; slr.pred
 
+# Calcular a diferença entre os valores reais e previstos
 dif = dataset.test$altitude_results - slr.pred ; dif
 
-# MAE
+# Calcular o erro absoluto médio entre os valores reais e previstos
+# MAE (Mean Absolute Error)
 slr.mae = mean(abs(dif))
 cat("mae : ", slr.mae)
 # mae : 0.09047102
 
-# RMSE
+# Calcular a raiz quadrada do erro médio entre os valores reais e previstos
+# RMSE (Root Mean Squared Error)
 slr.rmse = sqrt(mean(dif^2))
 cat("rmse : ", slr.rmse)
 # rmse : 0.1088708
 
 # d)
+# Criar um modelo de regressão linear mais complexo (regressão linear múltipla)
 complex.model <- lm(altitude_results ~ hr_results + vo2_results, data = dataset.train)
 complex.model # Equação: altitude_results = 0.01565 + 0.28762*hr_results + 0.59886*vo2_results
 
+# Fazer a previsão dos valores utilizando o modelo
 complex.model.pred = predict(complex.model, dataset.test) ; complex.model.pred
 
+# Calcular a diferença entre os valores reais e previstos
 dif = dataset.test$altitude_results - complex.model.pred ; dif
 
-# MAE
+# Calcular o erro absoluto médio entre os valores reais e previstos
+# MAE (Mean Absolute Error)
 complex.model.mae = mean(abs(dif))
 cat("mae : ", complex.model.mae)
 # mae : 0.08699231
 
-# RMSE
+# Calcular a raiz quadrada do erro médio entre os valores reais e previstos
+# RMSE (Root Mean Squared Error)
 complex.model.rmse = sqrt(mean(dif^2))
 cat("rmse : ", complex.model.rmse)
 # rmse : 0.1074573
@@ -238,37 +246,50 @@ cat("rmse : ", complex.model.rmse)
 
 # 7.
 # a)
+# Criar um modelo de regressão linear múltipla
+# A variável dependente é vo2_results e as variáveis independentes são altitude_results e hr_results
 mlr.model = lm(vo2_results ~ altitude_results + hr_results, data = dataset.train)
 mlr.model # Equação: vo2_results = 0.01845 + 0.14254*altitude_results + 0.83559*hr_results
 
+# Resumo estatístico do modelo de regressão linear múltipla
 summary(mlr.model)
 
+# Fazer a previsão dos valores utilizando o modelo de regressão linear múltipla
 mlr.pred = predict(mlr.model, dataset.test) ; mlr.pred
 
+# Calcular a diferença entre os valores reais e previstos
 dif = dataset.test$vo2_results - mlr.pred ; dif
 
-# MAE
+# Calcular o erro absoluto médio entre os valores reais e previstos
+# MAE (Mean Absolute Error)
 mlr.mae = mean(abs(dif))
 cat("mae : ", mlr.mae)
 # mae : 0.04313445
 
-# RMSE
+# Calcular a raiz quadrada do erro médio entre os valores reais e previstos
+# RMSE (Root Mean Squared Error)
 mlr.rmse = sqrt(mean(dif^2))
 cat("rmse : ", mlr.rmse)
 # rmse : 0.0536209
 
 # b)
+# Criar um modelo de árvore de decisão
+# A variável dependente é vo2_results e as variáveis independentes são altitude_results e hr_results
 tree.model = rpart(vo2_results ~ altitude_results + hr_results, method = "anova", data = dataset.train) ; tree.model
+
+# Gerar um gráfico visual da árvore de decisão criada
 rpart.plot(tree.model)
 
-# outra alternativa de visualização da árvore
+# Outra alternativa de visualização da árvore (mais detalhada)
 rpart.plot(tree.model, digits = 4, fallen.leaves = TRUE, type = 3, extra = 101)
 
-# Variável que mais influencia os resultados da árvore: hr_results
+# A variável que mais influencia os resultados da árvore é hr_results.
 
 # c)
-#---------------------
-# 1 internal node
+# Modelos de redes neuronais com vários parâmetros
+
+# Criar um modelo de rede neural com um único nó interno.
+# A variável dependente é vo2_results e as variáveis independentes são altitude_results e hr_results
 numnodes <- 1
 
 nn.model <- 
@@ -277,12 +298,13 @@ nn.model <-
     data = dataset.train,
     hidden = numnodes
   )
+# Gerar o gráfico da rede neuronal criada
 plot(nn.model)
 
+# Apresentar os resultados da rede neuronal
 nn.model$result.matrix
 
-
-# 3 internal nodes
+# Criar um modelo de rede neuronal com três nós internos
 numnodes <- 3
 
 nn.model.i <- 
@@ -291,12 +313,15 @@ nn.model.i <-
     data = dataset.train,
     hidden = numnodes
   )
+# Gerar o gráfico da rede neuronal criada
 plot(nn.model.i)
 
+# Apresentar os resultados da rede neuronal
 nn.model.i$result.matrix
 
 
-# 6 first and 2 second internal nodes
+# Criar um modelo de rede neuronal com 2 níveis internos:
+# o primeiro com 6 nós internos e o segundo com 2 nós internos
 numnodes <- c(6,2)
 
 nn.model.ii <- 
@@ -305,87 +330,101 @@ nn.model.ii <-
     data = dataset.train,
     hidden = numnodes
   )
+# Gerar o gráfico da rede neuronal criada
 plot(nn.model.ii)
 
+# Apresentar os resultados da rede neuronal
 nn.model.ii$result.matrix
 
 
 # 8.
-# Modelo da regressão linear múltipla (RLM)
+# Fazer a previsão dos valores utilizando o modelo da regressão linear múltipla (RLM)
 mlr.pred = predict(mlr.model, dataset.test) ; mlr.pred
 
+# Calcular a diferença entre os valores reais e previstos
 dif = dataset.test$vo2_results - mlr.pred ; dif
 
-# MAE
+# Calcular o erro absoluto médio entre os valores reais e previstos
+# MAE (Mean Absolute Error)
 mlr.mae = mean(abs(dif))
 cat("mae : ", mlr.mae)
 # mae : 0.04313445
 
-# RMSE
+# Calcular a raiz quadrada do erro médio entre os valores reais e previstos
+# RMSE (Root Mean Squared Error)
 mlr.rmse = sqrt(mean(dif^2))
 cat("rmse : ", mlr.rmse)
 # rmse : 0.0536209
 
 
-# Modelo da árvore de regressão
+# Fazer a previsão dos valores utilizando o modelo da árvore de decisão
 tree.pred = predict(tree.model, dataset.test)
 
+# Calcular a diferença entre os valores reais e previstos
 dif = dataset.test$vo2_results - tree.pred
 
-# MAE
+# Calcular o erro absoluto médio entre os valores reais e previstos
+# MAE (Mean Absolute Error)
 tree.mae = mean(abs(dif))
 cat("mae : ", tree.mae)
 # mae : 0.0505167
 
-# RMSE
+# Calcular a raiz quadrada do erro médio entre os valores reais e previstos
+# RMSE (Root Mean Squared Error)
 tree.rmse = sqrt(mean(dif^2))
 cat("rmse : ", tree.rmse)
 # rmse : 0.06429228
 
 
-# Modelo da rede neuronal (1 nó interno)
+# Fazer a previsão dos valores utilizando o modelo da rede neuronal (1 nó interno)
 nn.pred = predict(nn.model, dataset.test)
 
+# Calcular a diferença entre os valores reais e previstos
 dif = dataset.test$vo2_results - nn.pred
 
-# MAE
+# Calcular o erro absoluto médio entre os valores reais e previstos
+# MAE (Mean Absolute Error)
 nn.mae = mean(abs(dif))
 cat("mae : ", nn.mae)
 # mae : 0.04382219
 
-# RMSE
+# Calcular a raiz quadrada do erro médio entre os valores reais e previstos
+# RMSE (Root Mean Squared Error)
 nn.rmse = sqrt(mean(dif^2))
 cat("rmse : ", nn.rmse)
 # rmse : 0.05435656
 
 
-# Modelo                       | MAE        | RMSE       |
-# Regressão linear múltipla    | 0.04313445 | 0.0536209  |
-# Árvore de regressão          | 0.0505167  | 0.06429228 |
-# Rede neuronal (1 nó interno) | 0.04382219 | 0.05435656 |
+# Modelo                       | MAE (Mean Absolute Error) | RMSE (Root Mean Squared Error) |
+# Regressão linear múltipla    | 0.04313445                | 0.0536209                      |
+# Árvore de regressão          | 0.0505167                 | 0.06429228                     |
+# Rede neuronal (1 nó interno) | 0.04382219                | 0.05435656                     |
 
-# Menor MAE e RMSE -> RLM
-# Maior MAE e RMSE -> Árvore de regressão
+# Menor MAE (Mean Absolute Error) e RMSE (Root Mean Squared Error) -> RLM
+# Maior MAE (Mean Absolute Error) e RMSE (Root Mean Squared Error) -> Árvore de regressão
 
 
 # 9.
-# 2 melhores modelos: RLM e Rede neuronal (1 nó interno)
+# 2 melhores modelos são RLM e Rede neuronal (1 nó interno)
 
-# Criar amostra para cada modelo
+# Criar amostra para cada um dos modelos
 mlr.sample <- c(mlr.mae, mlr.rmse)
 nn.sample <- c(nn.mae, nn.rmse)
 
 # H0: Os resultados obtidos para os dois modelos são estatisticamente significativos
 # H1: Os resultados obtidos para os dois modelos não são estatisticamente significativos
 
-# Teste t com significância de 5%
+# Teste t de Student com significância de 5% (default)
 t.test(mlr.sample, nn.sample)
 
 # Como p = 0.9324 > alfa = 0.05, não existe evidência estatística suficiente para se rejeitar H0.
 # Logo, conclui-se que os resultados obtidos para os dois modelos são estatisticamente significativos.
 # O mais eficiente é aquele que apresenta um MAE e um RMSE menor, ou seja, o modelo da regressão linear múltipla.
 
-###################################################### Classificação ########################################################
+
+#-------------------------------------------------------------------------------
+
+# Classificação
 
 # 1.
 
@@ -569,7 +608,403 @@ if (p_value < alpha) {
 result
 
 
-########## 3
+# 2.
+# Criar a amostra dos dados em treino e teste
+sample.wtc <- sample(c(TRUE, FALSE), nrow(dataset), replace = TRUE, prob = c(0.70, 0.30))
+
+dataset.train <- dataset[sample.wtc,]
+dataset.test <- dataset[!sample.wtc,]
+
+# Resumo estatístico dos valores da variável Winter.Training.Camp nos conjuntos de treino e treino
+summary(dataset.train$Winter.Training.Camp)
+summary(dataset.test$Winter.Training.Camp)
+
+
+# Criar um modelo de árvore de decisão
+# A variável dependente é Winter.Training.Camp e todas as restantes são variáveis independentes
+tree.model = rpart(Winter.Training.Camp ~ ., method = "anova", data = dataset.train) ; tree.model
+rpart.plot(tree.model)
+
+# Outra alternativa de visualização da árvore (mais detalhada)
+rpart.plot(tree.model, digits = 4, fallen.leaves = TRUE, type = 3, extra = 101)
+
+# Fazer a previsão dos valores utilizando o modelo da árvore de decisão
+tree.pred = predict(tree.model, dataset.test)
+
+# Calcular a diferença entre os valores reais e previstos
+dif = dataset.test$Winter.Training.Camp - tree.pred
+
+# Calcular o erro absoluto médio entre os valores reais e previstos
+# MAE (Mean Absolute Error)
+tree.mae = mean(abs(dif))
+cat("mae : ", tree.mae)
+# mae : 0.423244
+
+# Calcular a raiz quadrada do erro médio entre os valores reais e previstos
+# RMSE (Root Mean Squared Error)
+tree.rmse = sqrt(mean(dif^2))
+cat("rmse : ", tree.rmse)
+# rmse : 0.4950887
+
+
+# Criar um modelo de rede neural com 1 único nó interno
+# A variável dependente é Winter.Training.Camp e todas as restantes são variáveis independentes
+numnodes.1 <- 1
+
+nn.model.1 <- 
+  neuralnet(
+    Winter.Training.Camp ~ .,
+    data = dataset.train,
+    hidden = numnodes.1
+  )
+# Gerar o gráfico da rede neuronal criada
+plot(nn.model.1)
+
+# Apresentar os resultados da rede neuronal
+nn.model.1$result.matrix
+
+# Fazer a previsão dos valores utilizando o modelo da rede neuronal (1 nó interno)
+nn.pred.1 = predict(nn.model.1, dataset.test)
+
+# Calcular a diferença entre os valores reais e previstos
+dif.1 = dataset.test$Winter.Training.Camp - nn.pred.1
+
+# Calcular o erro absoluto médio entre os valores reais e previstos
+# MAE (Mean Absolute Error)
+nn.mae.1 = mean(abs(dif.1))
+cat("mae : ", nn.mae.1)
+# mae : 0.3664197
+
+# Calcular a raiz quadrada do erro médio entre os valores reais e previstos
+# RMSE (Root Mean Squared Error)
+nn.rmse.1 = sqrt(mean(dif.1^2))
+cat("rmse : ", nn.rmse.1)
+# rmse : 0.4455933
+
+
+# Criar um modelo de rede neuronal com 2 nós internos
+numnodes.2 <- 2
+
+nn.model.2 <- 
+  neuralnet(
+    Winter.Training.Camp ~ .,
+    data = dataset.train,
+    hidden = numnodes.2
+  )
+# Gerar o gráfico da rede neuronal criada
+plot(nn.model.2)
+
+# Apresentar os resultados da rede neuronal
+nn.model.2$result.matrix
+
+# Fazer a previsão dos valores utilizando o modelo da rede neuronal (2 nós internos)
+nn.pred.2 = predict(nn.model.2, dataset.test)
+
+# Calcular a diferença entre os valores reais e previstos
+dif.2 = dataset.test$Winter.Training.Camp - nn.pred.2
+
+# Calcular o erro absoluto médio entre os valores reais e previstos
+# MAE (Mean Absolute Error)
+nn.mae.2 = mean(abs(dif.2))
+cat("mae : ", nn.mae.2)
+# mae : 0.388896
+
+# Calcular a raiz quadrada do erro médio entre os valores reais e previstos
+# RMSE (Root Mean Squared Error)
+nn.rmse.2 = sqrt(mean(dif.2^2))
+cat("rmse : ", nn.rmse.2)
+# rmse : 0.470537
+
+
+# Criar um modelo de rede neuronal com 3 nós internos
+numnodes.3 <- 3
+
+nn.model.3 <- 
+  neuralnet(
+    Winter.Training.Camp ~ .,
+    data = dataset.train,
+    hidden = numnodes.3
+  )
+# Gerar o gráfico da rede neuronal criada
+plot(nn.model.3)
+
+# Apresentar os resultados da rede neuronal
+nn.model.3$result.matrix
+
+# Fazer a previsão dos valores utilizando o modelo da rede neuronal (3 nós internos)
+nn.pred.3 = predict(nn.model.3, dataset.test)
+
+# Calcular a diferença entre os valores reais e previstos
+dif.3 = dataset.test$Winter.Training.Camp - nn.pred.3
+
+# Calcular o erro absoluto médio entre os valores reais e previstos
+# MAE (Mean Absolute Error)
+nn.mae.3 = mean(abs(dif.3))
+cat("mae : ", nn.mae.3)
+# mae : 0.4011656
+
+# Calcular a raiz quadrada do erro médio entre os valores reais e previstos
+# RMSE (Root Mean Squared Error)
+nn.rmse.3 = sqrt(mean(dif.3^2))
+cat("rmse : ", nn.rmse.3)
+# rmse : 0.5008155
+
+
+# Criar um modelo de rede neuronal com 4 nós internos
+numnodes.4 <- 4
+
+nn.model.4 <- 
+  neuralnet(
+    Winter.Training.Camp ~ .,
+    data = dataset.train,
+    hidden = numnodes.4
+  )
+# Gerar o gráfico da rede neuronal criada
+plot(nn.model.4)
+
+# Apresentar os resultados da rede neuronal
+nn.model.4$result.matrix
+
+# Fazer a previsão dos valores utilizando o modelo da rede neuronal (4 nós internos)
+nn.pred.4 = predict(nn.model.4, dataset.test)
+
+# Calcular a diferença entre os valores reais e previstos
+dif.4 = dataset.test$Winter.Training.Camp - nn.pred.4
+
+# Calcular o erro absoluto médio entre os valores reais e previstos
+# MAE (Mean absolute error)
+nn.mae.4 = mean(abs(dif.4))
+cat("mae : ", nn.mae.4)
+# mae : 0.4214287
+
+# Calcular a raiz quadrada do erro médio entre os valores reais e previstos
+# RMSE (Root Mean Squared Error)
+nn.rmse.4 = sqrt(mean(dif.4^2))
+cat("rmse : ", nn.rmse.4)
+# rmse : 0.5097741
+
+
+# Modelo                         | MAE (Mean absolute error) | RMSE (Root Mean Squared Error) |
+# Árvore de regressão            | 0.423244                  | 0.4950887                      |
+# Rede neuronal (1 nó interno)   | 0.3664197                 | 0.4455933                      |
+# Rede neuronal (2 nós internos) | 0.388896                  | 0.470537                       |
+# Rede neuronal (3 nós internos) | 0.4011656                 | 0.5008155                      |
+# Rede neuronal (4 nós internos) | 0.4214287                 | 0.5097741                      |
+
+
+# a)
+# 2 melhores modelos: Árvore de regressão e Rede neuronal (1 nó interno)
+
+# Definir o número de folds
+cvf <- 11
+
+# Gerar amostras aleatórias de números de 1 a 11 para atribuir um fold a cada observação do dataset
+# A substituição é permitida para que um mesmo fold possa ser selecionado mais de uma vez
+folds <- sample(1:cvf, nrow(dataset), replace = TRUE)
+
+# Apresentar uma tabela com a contagem de observações em cada fold
+table(folds)
+
+# Variáveis auxiliares
+accuracy <- matrix(nrow = cvf, ncol = 2)
+numnodes <- 1
+
+for (i in 1:cvf) {
+  # Dividir o dataset num conjunto de treino e teste
+  train.cv <- dataset[folds != i, ]
+  test.cv <- dataset[folds == i, ]
+  
+  # Obter a variável dependente (Winter.Training.Camp) para o treino e teste
+  train_labels <- dataset[folds != i, "Winter.Training.Camp"]
+  tst_labels <- dataset[folds == i, "Winter.Training.Camp"]
+  
+  # Criar o modelo de árvore de decisão
+  # A variável dependente é Winter.Training.Camp e todas as restantes são variáveis independentes
+  rpart.model <- rpart(Winter.Training.Camp ~ ., method="class", data = train.cv)
+  
+  # Fazer a previsão dos valores utilizando o modelo da árvore de decisão
+  rpart.pred <- predict(rpart.model, test.cv, type = "class")
+  
+  # Criar matriz de confusão comparando as classes reais com as classes previstas
+  cfmatrpart <- table(tst_labels, rpart.pred)
+  
+  
+  # Criar o modelo da rede neuronal (1 nó interno)
+  # A variável dependente é Winter.Training.Camp e todas as restantes são variáveis independentes
+  nn.model <- 
+    neuralnet(
+      Winter.Training.Camp ~ .,
+      data = train.cv,
+      hidden = numnodes
+    )
+  
+  # Fazer a previsão dos valores utilizando o modelo da rede neuronal (1 nó interno)
+  nn.pred <- compute(nn.model, test.cv[, -sample])$net.result
+  
+  # Converter as probabilidades de previsão em classes binárias utilizando um limiar de corte de 0.5
+  # Valores acima de 0.5 são atribuídos à classe 1, enquanto valores abaixo de 0.5 são atribuídos à classe 0
+  nn.pred <- ifelse(nn.pred > 0.5, 1, 0)
+  
+  # Criar matriz de confusão comparando as classes reais com as classes previstas
+  cfmatneuralnet <- table(tst_labels, nn.pred)
+  
+  # Calcular a precisão para cada modelo e armazenar os resultados na matriz accuracy
+  accuracy[i, ] <- c(
+    sum(diag(cfmatrpart))/sum(cfmatrpart),
+    sum(diag(cfmatneuralnet))/sum(cfmatneuralnet)
+  )
+}
+# Apresentar a matriz accuracy
+accuracy
+
+# Calcular a média e desvio padrão da precisão de cada modelo ao longo dos folds
+apply(accuracy, 2, mean)
+apply(accuracy, 2, sd)
+
+# Para k = 10
+# Modelo                       | Accuracy Mean | Accuracy SD |
+# Árvore de decisão            | 0.6905398     | 0.03779142  |
+# Rede neuronal (1 nó interno) | 0.6692691     | 0.04917135  |
+
+# Para k = 11
+# Modelo                       | Accuracy Mean | Accuracy SD |
+# Árvore de decisão            | 0.7046665     | 0.05105016  |
+# Rede neuronal (1 nó interno) | 0.6710215     | 0.05080322  |
+
+# Para k = 12
+# Modelo                       | Accuracy Mean | Accuracy SD |
+# Árvore de decisão            | 0.7002333     | 0.04956924  |
+# Rede neuronal (1 nó interno) | 0.6690206     | 0.04606955  |
+
+
+# b)
+# 2 melhores modelos: Árvore de decisão e Rede neuronal (1 nó interno)
+
+# Definir valores de precisão de cada modelo
+tree.accuracy <- accuracy[, 1]
+nn.accuracy <- accuracy[, 2]
+
+# H0: Existe diferença significativa no desempenho dos dois modelos
+# H1: Não existe diferença significativa no desempenho dos dois modelos
+
+# Realizar teste t com significância de 5%
+t.test(tree.accuracy, nn.accuracy)
+
+# Como p = 0.137 > alfa = 0.05, não existe evidência estatística suficiente para se rejeitar H0.
+# Logo, conclui-se que existe diferença significativa no desempenho dos dois modelos.
+
+
+# c)
+# Definir o número de folds
+cvf <- 11
+
+# Gerar amostras aleatórias de números de 1 a 11 para atribuir um fold a cada observação do dataset
+# A substituição é permitida para que um mesmo fold possa ser selecionado mais de uma vez
+folds <- sample(1:cvf, nrow(dataset), replace = TRUE)
+
+# Apresentar uma tabela com a contagem de observações em cada fold
+table(folds)
+
+# Variáveis auxiliares
+accuracy <- matrix(nrow = cvf, ncol = 2)
+sensitivity <- matrix(nrow = cvf, ncol = 2)
+specificity <- matrix(nrow = cvf, ncol = 2)
+f1 <- matrix(nrow = cvf, ncol = 2)
+numnodes <- 1
+
+for (i in 1:cvf) {
+  # Dividir o dataset num conjunto de treino e teste
+  train.cv <- dataset[folds != i, ]
+  test.cv <- dataset[folds == i, ]
+  
+  # Obter a variável dependente (Winter.Training.Camp) para o treino e teste
+  train_labels <- dataset[folds != i, "Winter.Training.Camp"]
+  tst_labels <- dataset[folds == i, "Winter.Training.Camp"]
+  
+  # Criar o modelo de árvore de decisão
+  # A variável dependente é Winter.Training.Camp e todas as restantes são variáveis independentes
+  rpart.model <- rpart(Winter.Training.Camp ~ ., method="class", data = train.cv)
+  
+  # Fazer a previsão dos valores utilizando o modelo da árvore de decisão
+  rpart.pred <- predict(rpart.model, test.cv, type = "class")
+  
+  # Criar matriz de confusão comparando as classes reais com as classes previstas
+  cfmatrpart <- table(tst_labels, rpart.pred)
+  
+  
+  # Criar o modelo da rede neuronal (1 nó interno)
+  # A variável dependente é Winter.Training.Camp e todas as restantes são variáveis independentes
+  nn.model <- 
+    neuralnet(
+      Winter.Training.Camp ~ .,
+      data = train.cv,
+      hidden = numnodes
+    )
+  
+  # Fazer a previsão dos valores utilizando o modelo da rede neuronal (1 nó interno)
+  nn.pred <- compute(nn.model, test.cv[, -sample])$net.result
+  
+  # Converter as probabilidades de previsão em classes binárias utilizando um limiar de corte de 0.5
+  # Valores acima de 0.5 são atribuídos à classe 1, enquanto valores abaixo de 0.5 são atribuídos à classe 0
+  nn.pred <- ifelse(nn.pred > 0.5, 1, 0)
+  
+  # Criar matriz de confusão comparando as classes reais com as classes previstas
+  cfmatneuralnet <- table(tst_labels, nn.pred)
+  
+  # Calcular a precisão para cada modelo e armazenar os resultados na matriz accuracy
+  accuracy[i, ] <- c(
+    sum(diag(cfmatrpart))/sum(cfmatrpart),
+    sum(diag(cfmatneuralnet))/sum(cfmatneuralnet)
+  )
+  
+  # Calcular a sensibilidade (taxa de verdadeiros positivos) para cada modelo
+  sensitivity_rpart <- sensitivity(cfmatrpart)[2]
+  sensitivity_neuralnet <- sensitivity(cfmatneuralnet)[2]
+  
+  # Verificar se a sensibilidade é um valor válido
+  # Caso contrário, atribuir 0
+  if (is.na(sensitivity_rpart)) sensitivity_rpart <- 0
+  if (is.na(sensitivity_neuralnet)) sensitivity_neuralnet <- 0
+  
+  # Armazenar as sensibilidades dos 2 modelos na matriz sensitivity
+  sensitivity[i, ] <- c(
+    sensitivity_rpart,
+    sensitivity_neuralnet
+  )
+  
+  # Calcular a especificidade (taxa de verdadeiros negativos) para cada modelo
+  # e armazenar os resultados na matriz specificity
+  specificity[i, ] <- c(
+    specificity(cfmatrpart)[1],
+    specificity(cfmatneuralnet)[1]
+  )
+  
+  # Calcular a medida F1 para cada modelo
+  # e armazenar os resultados na matriz f1
+  f1[i, ] <- c(
+    (2 * cfmatrpart[2, 2]) / (sum(cfmatrpart[, 2]) + sum(cfmatrpart[2, ])),
+    (2 * cfmatneuralnet[2, 2]) / (sum(cfmatneuralnet[, 2]) + sum(cfmatneuralnet[2, ]))
+  )
+}
+
+# Calcular a média das métricas de desempenho para cada modelo ao longo dos folds
+mean_accuracy <- apply(accuracy, 2, mean)
+mean_sensitivity <- apply(sensitivity, 2, mean)
+mean_specificity <- apply(specificity, 2, mean)
+mean_f1 <- apply(f1, 2, mean)
+
+# Apresentar as médias das métricas de desempenho de cada modelo
+cat("Mean Accuracy:", mean_accuracy, "\n")
+cat("Mean Sensitivity:", mean_sensitivity, "\n")
+cat("Mean Specificity:", mean_specificity, "\n")
+cat("Mean F1:", mean_f1, "\n")
+
+# Modelo                       | Mean Accuracy | Mean Sensitivity | Mean Specificity | Mean F1
+# Árvore de decisão            | 0.6893017     | 0                | 0.7128468        | 0.7850189 
+# Rede neuronal (1 nó interno) | 0.688401      | 0                | 0.7699543        | 0.7562122 
+
+
+# 3.
 
 sample <- sample(c(TRUE, FALSE), nrow(dataset), replace = TRUE, prob = c(0.70, 0.30))
 
