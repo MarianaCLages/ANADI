@@ -442,13 +442,19 @@ clean_dataset.test <- clean_dataset[-index,]
 # Elaboração do modelo da Decision Tree
 model_dt <- rpart(
   Pro.level ~ gender + altitude_results + vo2_results + hr_results,
-  method = "anova", data = clean_dataset.train)
+  method = "class", data = clean_dataset.train)
 
-# Generate predictions
-predictions_dt <- predict(model_dt, clean_dataset.test)
+# Representação gráfica
+plot(model_dt)
+
+# Gerar as previsões
+predictions_dt <- predict(model_dt, clean_dataset.test, method = "class")
 
 # Arredondamento dos resultados obtidos para poder estar em sintonia com o formato binário do dataset.
 predictions_dt <- ifelse(predictions_dt > 0.5, "1", "0")
+
+# Convergência para uma coluna
+predictions_dt <- predictions_dt[, 2]
 
 # Criação da Confusion Matrix
 cfmatrix_dt <- table(clean_dataset.test$Pro.level, predictions_dt)
@@ -575,7 +581,7 @@ for (i in 1:cvf) {
   predictions_nn <- ifelse(predictions_nn > 0.5, "1", "0")
   
   # Criação da Confusion Matrix
-  cfmatrix_nn <- table(clean_dataset.test$Pro.level, predictions_nn)
+  cfmatrix_nn <- table(dataset.test$Pro.level, predictions_nn)
   
   # Cálculo da Precisão da rede neuronal
   accuracy_nn <- sum(diag(cfmatrix_nn)) / sum(cfmatrix_nn) * 100
