@@ -18,8 +18,8 @@ library(class)
 # Definição do caminho em que se encontra o script
 #setwd("C:/Users/franc/Documents/Repositórios/anadi23/Script exercícios/2TP")
 #setwd("/Users/fredol/Documents/isep/anadi23/Script exercícios/2TP")
-setwd("C:/Users/maria/Desktop/ISEP/3ºano/2ºsemestre/ANADI/anadi23/Script exercícios/2TP")
-#setwd("C:/Users/MiguelJordão(1201487/Desktop/ANADI/anadi23/Script exercícios/2TP")
+#setwd("C:/Users/maria/Desktop/ISEP/3ºano/2ºsemestre/ANADI/anadi23/Script exercícios/2TP")
+setwd("C:/Users/MiguelJordão(1201487/Desktop/ANADI/anadi23/Script exercícios/2TP")
 
 # Importação dos dados
 dataset <- read.csv("ciclismo.csv", header = TRUE, stringsAsFactors = FALSE)
@@ -1003,16 +1003,19 @@ cat("Mean F1:", mean_f1, "\n")
 # Árvore de decisão            | 0.6893017     | 0                | 0.7128468        | 0.7850189 
 # Rede neuronal (1 nó interno) | 0.688401      | 0                | 0.7699543        | 0.7562122 
 
+########################################################################################################
 
-# 3.
+# Exercício 3.
 
 sample <- sample(c(TRUE, FALSE), nrow(dataset), replace = TRUE, prob = c(0.70, 0.30))
 
 
-########### NN ###########
+########################################################################################################
+
+####################################### Modelo de Rede Neuronal ########################################
 
 # Internal nodes
-numnodes <- c(16,10,2)
+numnodes <- c(16,10,6,2)
 
 data.train <- dataset[sample,]
 data.tst <- dataset[-sample, ]
@@ -1043,14 +1046,16 @@ cat("rmse : ", nn.rmse.ex.3)
 # Rede neuronal (9,3 nós)          | 0.1109829  | 0.2822349  |
 # Rede neuronal (3,1 nós)          | 0.1016662  | 0.2591252  |
 # Rede neuronal (10,6,2 nós)       | 0.09024785 | 0.2538431  |
-# Rede neuronal (16,10,6,2) nós)   | 0.08026149 | 0.2442239  |
+# Rede neuronal (16,10,6,2) nós)   | 0.0727091  | 0.2588458  |
 # Rede neuronal (20,16,10,6,2) nós)| 0.06134385 | 0.2342042  |
 # Rede neuronal (1 nó)             | 0.1583033  | 0.2870171  |
 
 # Uma vez que usando os nós (20,16,10,6,2) demora imenso tempo só a fazer uma vez o modelo vamos adaptar o modelo com os nodes (16,10,6,2) pois os valores não diferem
-# tanto e é possível usar este modelo em K-Cross models uma vez que vai realizar o mesmo modelo 10 vezes sobre partes diferentes do dataset.train e dataset.test
+# tanto e é possível usar este modelo em K-Cross models uma vez que vai realizar o mesmo modelo 1-12 vezes sobre partes diferentes do dataset.train e dataset.test, logo vai demorar imenso tempo
 
-########## KNN ###########
+##################################################################################################################
+
+####################################### Modelo de k-vizinhos-mais-próximos #######################################
 
 data.train <- dataset[sample, -which(names(dataset) == "gender")]
 data.tst <- dataset[-sample, -which(names(dataset) == "gender")]
@@ -1077,8 +1082,8 @@ resNeigh[resNeigh$accuracy==max(resNeigh$accuracy), ]
 plot(resNeigh$k,resNeigh$accuracy)
 
 #   k  accuracy
-#1 1 0.8628629
-# K=1
+#1 1 0.8508509
+# Melhor K -> k=1
 
 #Plot Max accuracy
 resNeigh[resNeigh$accuracy == max(resNeigh$accuracy), ]
@@ -1093,15 +1098,19 @@ plot(
   )
 )
 
-# K = 1 é o melhor K dado o plot
+# K = 1 é o melhor K dado o plot apresentado, uma vez que é o que apresenta um melhor accuracy
 
-# a)
+##################################################################################################################
 
-# NN model -> c(16,10.6,2)
+# Alínea a)
+
+# Melhores modelos:
+# NN model -> c(16,10,6,2)
 # KNN model -> K=1
 
-# K-Cross info
-cvf <- 12
+# Gerar amostras aleatórias de números de 1 a 11 para atribuir um fold a cada observação do dataset
+# A substituição é permitida para que um mesmo fold possa ser selecionado mais de uma vez
+cvf <- 11
 folds <- sample(1:cvf, nrow(dataset), replace = TRUE)
 
 # Fold size
@@ -1113,43 +1122,65 @@ k <- 1
 numnodes <- c(16,10.6,2)
 
 for (i in 1:cvf) {
+  # Dividir o dataset num conjunto de treino e teste
   train.cv <- dataset[folds != i, ]
   test.cv <- dataset[folds == i, ]
   
+  # Obter a variável dependente (gender) para o treino e teste
   train_labels <- dataset[folds != i, "gender"]
   tst_labels <- dataset[folds == i, "gender"]
   
+  # Criar o modelo do knn
+  # A variável dependente é gender e todas as restantes são variáveis independentes
+  # Fazer a previsão dos valores utilizando o modelo de knn
   knn.pred <- knn(train = train.cv[, -sample], test = test.cv[, -sample], cl = train_labels, k)
+  
+  # Criar matriz de confusão comparando as classes reais com as classes previstas
   cfmatknn <- table(tst_labels, knn.pred)
   
+  # Criar o modelo da rede neuronal c(16,10,6,2) nós
+  # A variável dependente é gender e todas as restantes são variáveis independentes
   neuralnet.model <- neuralnet(gender ~ ., data = train.cv, hidden = numnodes)
+  
+  # Fazer a previsão dos valores utilizando o modelo da rede neuronal c(16,10,6,2) nós
   neuralnet.pred <- compute(neuralnet.model, test.cv[, -sample])$net.result
+  
+  # Converter as probabilidades de previsão em classes binárias utilizando um limiar de corte de 0.5
+  # Valores acima de 0.5 são atribuídos à classe 1, enquanto valores abaixo de 0.5 são atribuídos à classe 0
   neuralnet.pred <- ifelse(neuralnet.pred > 0.5, 1, 0)  # Convert probabilities to binary predictions
+  
+  # Criar matriz de confusão comparando as classes reais com as classes previstas
   cfmatneuralnet <- table(tst_labels, neuralnet.pred)
   
+  # Calcular a precisão para cada modelo e armazenar os resultados na matriz accuracy
   accuracy[i, ] <- c(
     sum(diag(cfmatknn))/sum(cfmatknn),
     sum(diag(cfmatneuralnet))/sum(cfmatneuralnet)
   )
 }
 
-accuracy
-
+# Calcular a média das métricas de desempenho para cada modelo ao longo dos folds
 # MEAN
 apply(accuracy, 2, mean)
 
 # SD
 apply(accuracy, 2, sd)
 
-# Experimentar com vários folds, o melhor fold é o K=12 pois obtemos uma
-# accuracy com uma média melhor e um desvio padrão também
+# KNN/NN
+# Após experimentar com vários folds, o melhor fold é o K=10 pois obtemos uma
+# accuracy com uma média melhor
 
 # K = X           |  NN Mean   | NN SD      | KNN Mean |  KNN SD  |
-# K = 10          | 0.7901825  | 0.06211227 |0.5165388 |0.05987278|
-# K = 12          | 0.7820203  | 0.02880992 |0.5210406 |0.04131759|
-# K = 13          | 0.7617719  | 0.06211227 |0.5151280 |0.04372504|
+# K = 10          | 0.7948120  | 0.03732952 |0.5390539 |0.05025901|
+# K = 11          | 0.7916849  | 0.03603084 |0.5289479 |0.02882902|
 
-# b)
+# O mais eficiente é aquele que apresenta uma Accuracy MEAN maior, ou seja, o modelo da rede neuronal.
+# O valor do Accuracy SD significa a variância dos dados (a consistência em si) em que o KNN para o valor de K=12 apresenta uma variancia mais pequena
+# Independente do número de folds é possível afirmar que o modelo NN apresenta uma melhor accuracy
+
+##################################################################################################################
+
+# Alínea b)
 
 knn.mean <- apply(accuracy, 2, mean)[1];
 knn.sd <- apply(accuracy, 2, sd)[1];
@@ -1159,30 +1190,37 @@ nn.sd <- apply(accuracy, 2, sd)[2];
 
 # 2 melhores modelos: KNN (k=1) e NN (c(16,10.6,2))
 
+# H0: Os resultados obtidos para os dois modelos são estatisticamente significativos
+# H1: Os resultados obtidos para os dois modelos não são estatisticamente significativos
 # Criar amostra para cada modelo
 knn.sample <- c(knn.mean, knn.sd)
 nn.sample <- c(nn.mean, nn.sd)
 
-# H0: Os resultados obtidos para os dois modelos são estatisticamente significativos
-# H1: Os resultados obtidos para os dois modelos não são estatisticamente significativos
-
 # Teste t com significância de 5%
 t.test(knn.sample, nn.sample)
 
-# Como p = 0.8064 > alfa = 0.05, não existe evidência estatística suficiente para se rejeitar H0.
+# Como p = 0.8166 > alfa = 0.05, não existe evidência estatística suficiente para se rejeitar H0.
 # Logo, conclui-se que os resultados obtidos para os dois modelos são estatisticamente significativos.
 
-# O mais eficiente é aquele que apresenta um MEAN e um SD menor, ou seja, o modelo da rede neuronal.
+##################################################################################################################
 
 # c)
 
-cvf <- 12
+# Melhores modelos:
+# NN model -> c(16,10,6,2)
+# KNN model -> K=1
+
+# Gerar amostras aleatórias de números de 1 a 12 para atribuir um fold a cada observação do dataset
+# A substituição é permitida para que um mesmo fold possa ser selecionado mais de uma vez
+cvf <- 11
 folds <- sample(1:cvf, nrow(dataset), replace = TRUE)
 
 # Fold size
 table(folds)
 
+# Aux variáveis
 accuracy <- matrix(nrow = cvf, ncol = 2)
+precision <- matrix(nrow = cvf, ncol = 2)
 sensitivity <- matrix(nrow = cvf, ncol = 2)
 specificity <- matrix(nrow = cvf, ncol = 2)
 f1 <- matrix(nrow = cvf, ncol = 2)
@@ -1190,94 +1228,87 @@ k <- 1
 numnodes <- c(16,10,6,2)
 
 for (i in 1:cvf) {
+  # Dividir o dataset num conjunto de treino e teste
   train.cv <- dataset[folds != i, ]
   test.cv <- dataset[folds == i, ]
   
+  # Obter a variável dependente (gender) para o treino e teste
   train_labels <- dataset[folds != i, "gender"]
   tst_labels <- dataset[folds == i, "gender"]
   
+  # Criar o modelo do knn
+  # A variável dependente é gender e todas as restantes são variáveis independentes
   knn.pred <- knn(train = train.cv[, -sample], test = test.cv[, -sample], cl = train_labels, k)
+  
+  # Criar matriz de confusão comparando as classes reais com as classes previstas
   cfmatknn <- table(tst_labels, knn.pred)
   
+  # Criar o modelo da rede neuronal c(16,10,6,2) nós
+  # A variável dependente é gender e todas as restantes são variáveis independentes
   neuralnet.model <- neuralnet(gender ~ ., data = train.cv, hidden = numnodes)
+  
+  # Fazer a previsão dos valores utilizando o modelo da rede neuronal c(16,10,6,2) nós
   neuralnet.pred <- compute(neuralnet.model, test.cv[, -sample])$net.result
+  
+  # Converter as probabilidades de previsão em classes binárias utilizando um limiar de corte de 0.5
+  # Valores acima de 0.5 são atribuídos à classe 1, enquanto valores abaixo de 0.5 são atribuídos à classe 0
   neuralnet.pred <- ifelse(neuralnet.pred > 0.5, 1, 0)  # Convert probabilities to binary predictions
+  
+  # Criar matriz de confusão comparando as classes reais com as classes previstas
   cfmatneuralnet <- table(tst_labels, neuralnet.pred)
   
+  # Calcular a precisão para cada modelo e armazenar os resultados na matriz accuracy
   accuracy[i, ] <- c(
     sum(diag(cfmatknn))/sum(cfmatknn),
     sum(diag(cfmatneuralnet))/sum(cfmatneuralnet)
   )
   
-  sensitivity_knn <- ifelse(sum(cfmatknn[2, ]) == 0, 0, cfmatknn[2, 2] / sum(cfmatknn[2, ]))
-  sensitivity_neuralnet <- ifelse(sum(cfmatneuralnet[2, ]) == 0, 0, cfmatneuralnet[2, 2] / sum(cfmatneuralnet[2, ]))
+  # Calcular a precisão para cada modelo
+  precision[i, ] <- c(
+    cfmatknn[1,1]/sum(cfmatknn[,1]),
+    cfmatneuralnet[1,1]/sum(cfmatneuralnet[,1])
+  )
   
+  # Calcular a sensibilidade (taxa de verdadeiros positivos) para cada modelo
   sensitivity[i, ] <- c(
-    sensitivity_knn,
-    sensitivity_neuralnet
+    cfmatknn[1,1]/sum(cfmatknn[1,]),
+    cfmatneuralnet[1,1]/sum(cfmatneuralnet[1,])
   )
   
+  # Calcular a especificidade (taxa de verdadeiros negativos) para cada modelo
+  # e armazenar os resultados na matriz specificity
   specificity[i, ] <- c(
-    specificity(cfmatknn)[1],
-    specificity(cfmatneuralnet)[1]
+    cfmatknn[2,2]/sum(cfmatknn[2,]),
+    cfmatneuralnet[2,2]/sum(cfmatneuralnet[2,])
   )
   
+  # Calcular a medida F1 para cada modelo
+  # e armazenar os resultados na matriz f1
   f1[i, ] <- c(
-    (2 * cfmatknn[2, 2]) / (sum(cfmatknn[, 2]) + sum(cfmatknn[2, ])),
-    (2 * cfmatneuralnet[2, 2]) / (sum(cfmatneuralnet[, 2]) + sum(cfmatneuralnet[2, ]))
+    (2 * precision[i, ][1] * sensitivity[i, ][1] ) / ((precision[i, ][1] + sensitivity[i, ][1])),
+    (2 * precision[i, ][2] * sensitivity[i, ][2] ) / ((precision[i, ][2] + sensitivity[i, ][2]))
   )
 
 }
 
-# Calculate the average performance metrics across folds
+# Calcular a média das métricas de desempenho para cada modelo ao longo dos folds
 mean_accuracy <- apply(accuracy, 2, mean)
+mean_precision <- apply(precision, 2, mean)
 mean_sensitivity <- apply(sensitivity, 2, mean)
 mean_specificity <- apply(specificity, 2, mean)
 mean_f1 <- apply(f1, 2, mean)
 
-# Print the average performance metrics
+# Apresentar as médias das métricas de desempenho de cada modelo
 cat("Mean Accuracy:", mean_accuracy, "\n")
+cat("Mean Precision:", mean_precision, "\n")
 cat("Mean Sensitivity:", mean_sensitivity, "\n")
 cat("Mean Specificity:", mean_specificity, "\n")
 cat("Mean F1:", mean_f1, "\n")
 
-##### Values #####
+####################################################### Valores (KNN/NN) #######################################################
 
-# Mean Accuracy: KNN/NN
-# 0.5436018 0.7999609
+# Modelo                       | Mean Accuracy | Mean Precision     | Mean Sensitivity | Mean Specificity | Mean F1
+# KNN                          | 0.5276064     | 0.5439251          | 0.5644452        | 0.4871879        | 0.5521911 
+# NN (16,10,6,2) nós           | 0.7908638     | 0.7929163          | 0.8149046        | 0.7613693        | 0.8014577 
 
-# Mean Sensitivity: KNN/NN
-# 0.5069086 0.7955286
-
-# Mean Specificity: KNN/NN
-# 0.5288314 0.8002718
-
-# Mean F1: KNN/NN
-# 0.516018 0.7922352
-
-#K-fold cross-validation provides a more reliable estimate of a model's performance compared to a single train-test split. It helps to 
-#mitigate the impact of random variations in the train-test split and provides a more robust evaluation of the model's ability to generalize to unseen data.
-
-### Data analysis ###
-
-#Based on the provided mean values for accuracy, sensitivity, specificity, and F1 score of the KNN (K-Nearest Neighbors) and NN (Neural Network) models
-#, the following conclusions can be made:
-  
-#Accuracy: The mean accuracy of the NN model (0.7999609) is higher than that of the KNN model (0.5436018). 
-#This indicates that, on average, the NN model performs better in predicting the "Gender" attribute compared to the KNN model.
-
-#Sensitivity: The mean sensitivity of the NN model (0.7955286) is higher than that of the KNN model (0.5069086). 
-#Sensitivity, also known as recall or true positive rate, represents the proportion of actual positive instances correctly predicted as positive. 
-#Therefore, the NN model shows better performance in correctly identifying positive instances (in this case, the gender) compared to the KNN model.
-
-#Specificity: The mean specificity of both models is relatively close. The NN model has a slightly higher mean specificity (0.8002718) 
-#compared to the KNN model (0.5288314). Specificity represents the proportion of actual negative instances correctly predicted as negative. 
-#Both models demonstrate reasonably good performance in identifying negative instances accurately.
-
-#F1 Score: The mean F1 score of the NN model (0.7922352) is higher than that of the KNN model (0.516018). 
-#The F1 score is a measure of the balance between precision and recall (sensitivity). It combines both metrics and provides an overall measure of model 
-#performance. The higher F1 score for the NN model suggests better overall performance in terms of precision and recall compared to the KNN model.
-
-#In summary, based on the given mean values, the NN model generally outperforms the KNN model in terms of accuracy, sensitivity, specificity, 
-#and F1 score when predicting the "Gender" attribute. It is important to consider additional factors such as model complexity, computational requirements, 
-#and the specific characteristics of the dataset when making a final decision about model selection.
+################################################################################################################################
