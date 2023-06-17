@@ -37,3 +37,6 @@
 #hide .RData and .Rhistory
 *.RData
 *.Rhistory
+*.Rproj.user
+*.Rproj
+.Rproj.user

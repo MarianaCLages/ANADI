@@ -445,7 +445,7 @@ model_dt <- rpart(
   method = "class", data = clean_dataset.train)
 
 # Representação gráfica
-plot(model_dt)
+rpart.plot(model_dt)
 
 # Gerar as previsões
 predictions_dt <- predict(model_dt, clean_dataset.test, method = "class")
@@ -535,13 +535,13 @@ resNeigh<-data.frame(k,accuracy)
 resNeigh[resNeigh$accuracy==max(resNeigh$accuracy), ]
 plot(resNeigh$k,resNeigh$accuracy)
 
-# Precisão máxima para k = 29
+# Precisão máxima para k = 41
 
 # Elaboração do modelo
 model_knn <- knn(train = clean_dataset.train[, -which(names(clean_dataset) == "Pro.level")],
                  test = clean_dataset.test[, -which(names(clean_dataset) == "Pro.level")],
                  cl = clean_dataset.train$Pro.level,
-                 k = 29) #resNeigh[resNeigh$accuracy==max(resNeigh$accuracy), ][1] - Uso Dinamico provocava erro
+                 k = 41) #resNeigh[resNeigh$accuracy==max(resNeigh$accuracy), ][1] - Uso Dinamico provocava erro
 
 # Confusion Matrix
 cfmatrix <- table(clean_dataset.test$Pro.level, model_knn)
@@ -592,7 +592,7 @@ for (i in 1:cvf) {
   model_knn <- knn(train = dataset.train[, -which(names(dataset.train) == "Pro.level")],
                    test = dataset.test[, -which(names(dataset.test) == "Pro.level")],
                    cl = dataset.train$Pro.level,
-                   k = 29)
+                   k = 41)
   
   # Cálculo da Confusion Matrix
   cfmatrix <- table(dataset.test$Pro.level, model_knn)
