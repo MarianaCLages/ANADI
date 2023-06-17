@@ -914,16 +914,23 @@ apply(accuracy, 2, sd)
 # 2 melhores modelos: Árvore de decisão e Rede neuronal (1 nó interno)
 
 # Definir valores de precisão de cada modelo
-tree.accuracy <- accuracy[, 1]
-nn.accuracy <- accuracy[, 2]
+tree.mean <- apply(accuracy, 2, mean)[1];
+tree.sd <- apply(accuracy, 2, sd)[1];
+
+nn.mean <- apply(accuracy, 2, mean)[2];
+nn.sd <- apply(accuracy, 2, sd)[2];
+
+# Criar amostra para cada modelo
+tree.sample <- c(tree.mean, tree.sd)
+nn.sample <- c(nn.mean, nn.sd)
 
 # H0: Existe diferença significativa no desempenho dos dois modelos
 # H1: Não existe diferença significativa no desempenho dos dois modelos
 
 # Realizar teste t com significância de 5%
-t.test(tree.accuracy, nn.accuracy)
+t.test(tree.sample, nn.sample)
 
-# Como p = 0.137 > alfa = 0.05, não existe evidência estatística suficiente para se rejeitar H0.
+# Como p = 0.9787 > alfa = 0.05, não existe evidência estatística suficiente para se rejeitar H0.
 # Logo, conclui-se que existe diferença significativa no desempenho dos dois modelos.
 
 
@@ -940,6 +947,7 @@ table(folds)
 
 # Variáveis auxiliares
 accuracy <- matrix(nrow = cvf, ncol = 2)
+precision <- matrix(nrow = cvf, ncol = 2)
 sensitivity <- matrix(nrow = cvf, ncol = 2)
 specificity <- matrix(nrow = cvf, ncol = 2)
 f1 <- matrix(nrow = cvf, ncol = 2)
@@ -984,57 +992,57 @@ for (i in 1:cvf) {
   # Criar matriz de confusão comparando as classes reais com as classes previstas
   cfmatneuralnet <- table(tst_labels, nn.pred)
   
-  # Calcular a precisão para cada modelo e armazenar os resultados na matriz accuracy
+  # Calcular a exatidão para cada modelo e armazenar os resultados na matriz accuracy
   accuracy[i, ] <- c(
     sum(diag(cfmatrpart))/sum(cfmatrpart),
     sum(diag(cfmatneuralnet))/sum(cfmatneuralnet)
   )
   
+  # Calcular a precisão para cada modelo e armazenar os resultados na matriz precision
+  precision[i, ] <- c(
+    cfmatrpart[1,1]/sum(cfmatrpart[,1]),
+    cfmatneuralnet[1,1]/sum(cfmatneuralnet[,1])
+  )
+  
   # Calcular a sensibilidade (taxa de verdadeiros positivos) para cada modelo
-  sensitivity_rpart <- sensitivity(cfmatrpart)[2]
-  sensitivity_neuralnet <- sensitivity(cfmatneuralnet)[2]
-  
-  # Verificar se a sensibilidade é um valor válido
-  # Caso contrário, atribuir 0
-  if (is.na(sensitivity_rpart)) sensitivity_rpart <- 0
-  if (is.na(sensitivity_neuralnet)) sensitivity_neuralnet <- 0
-  
-  # Armazenar as sensibilidades dos 2 modelos na matriz sensitivity
+  # e armazenar os resultados na matriz sensitivity
   sensitivity[i, ] <- c(
-    sensitivity_rpart,
-    sensitivity_neuralnet
+    cfmatrpart[1,1]/sum(cfmatrpart[1,]),
+    cfmatneuralnet[1,1]/sum(cfmatneuralnet[1,])
   )
   
   # Calcular a especificidade (taxa de verdadeiros negativos) para cada modelo
   # e armazenar os resultados na matriz specificity
   specificity[i, ] <- c(
-    specificity(cfmatrpart)[1],
-    specificity(cfmatneuralnet)[1]
+    cfmatrpart[2,2]/sum(cfmatrpart[2,]),
+    cfmatneuralnet[2,2]/sum(cfmatneuralnet[2,])
   )
   
-  # Calcular a medida F1 para cada modelo
-  # e armazenar os resultados na matriz f1
+  # Calcular a medida F1 para cada modelo e armazenar os resultados na matriz f1
   f1[i, ] <- c(
-    (2 * cfmatrpart[2, 2]) / (sum(cfmatrpart[, 2]) + sum(cfmatrpart[2, ])),
-    (2 * cfmatneuralnet[2, 2]) / (sum(cfmatneuralnet[, 2]) + sum(cfmatneuralnet[2, ]))
+    (2 * precision[i, ][1] * sensitivity[i, ][1] ) / ((precision[i, ][1] + sensitivity[i, ][1])),
+    (2 * precision[i, ][2] * sensitivity[i, ][2] ) / ((precision[i, ][2] + sensitivity[i, ][2]))
   )
 }
 
 # Calcular a média das métricas de desempenho para cada modelo ao longo dos folds
 mean_accuracy <- apply(accuracy, 2, mean)
+mean_precision <- apply(precision, 2, mean)
 mean_sensitivity <- apply(sensitivity, 2, mean)
 mean_specificity <- apply(specificity, 2, mean)
 mean_f1 <- apply(f1, 2, mean)
 
 # Apresentar as médias das métricas de desempenho de cada modelo
 cat("Mean Accuracy:", mean_accuracy, "\n")
+cat("Mean Precision:", mean_precision, "\n")
 cat("Mean Sensitivity:", mean_sensitivity, "\n")
 cat("Mean Specificity:", mean_specificity, "\n")
 cat("Mean F1:", mean_f1, "\n")
 
-# Modelo                       | Mean Accuracy | Mean Sensitivity | Mean Specificity | Mean F1
-# Árvore de decisão            | 0.6893017     | 0                | 0.7128468        | 0.7850189 
-# Rede neuronal (1 nó interno) | 0.688401      | 0                | 0.7699543        | 0.7562122 
+# Modelo                       | Mean Accuracy | Mean Precision | Mean Sensitivity | Mean Specificity | Mean F1
+# Árvore de decisão            | 0.7111292     | 0.6370409      | 0.3397574        | 0.9072962        | 0.4380479
+# Rede neuronal (1 nó interno) | 0.661738      | 0.5151077      | 0.5936268        | 0.6996822        | 0.5462835
+
 
 ########################################################################################################
 
@@ -1084,7 +1092,7 @@ cat("rmse : ", nn.rmse.ex.3)
 # Rede neuronal (1 nó)             | 0.1583033  | 0.2870171  |
 
 # Uma vez que usando os nós (20,16,10,6,2) demora imenso tempo só a fazer uma vez o modelo vamos adaptar o modelo com os nodes (16,10,6,2) pois os valores não diferem
-# tanto e é possível usar este modelo em K-Cross models uma vez que vai realizar o mesmo modelo 1-12 vezes sobre partes diferentes do dataset.train e dataset.test, logo vai demorar imenso tempo
+# tanto e é possível usar este modelo em K-Cross models uma vez que vai realizar o mesmo modelo 1-11 vezes sobre partes diferentes do dataset.train e dataset.test, logo vai demorar imenso tempo
 
 ##################################################################################################################
 
@@ -1152,7 +1160,7 @@ table(folds)
 # Aux variáveis
 accuracy <- matrix(nrow = cvf, ncol = 2)
 k <- 1
-numnodes <- c(16,10.6,2)
+numnodes <- c(16,10,6,2)
 
 for (i in 1:cvf) {
   # Dividir o dataset num conjunto de treino e teste
@@ -1204,11 +1212,11 @@ apply(accuracy, 2, sd)
 # accuracy com uma média melhor
 
 # K = X           |  NN Mean   | NN SD      | KNN Mean |  KNN SD  |
-# K = 10          | 0.7948120  | 0.03732952 |0.5390539 |0.05025901|
-# K = 11          | 0.7916849  | 0.03603084 |0.5289479 |0.02882902|
+# K = 10          | 0.7894010  | 0.03665688 |0.5160214 |0.02295913|
+# K = 11          | 0.8016012  | 0.04812821 |0.5400159 |0.02500828|
 
 # O mais eficiente é aquele que apresenta uma Accuracy MEAN maior, ou seja, o modelo da rede neuronal.
-# O valor do Accuracy SD significa a variância dos dados (a consistência em si) em que o KNN para o valor de K=12 apresenta uma variancia mais pequena
+# O valor do Accuracy SD significa a variância dos dados (a consistência em si) em que o KNN para o valor de K=11 apresenta uma variancia mais pequena
 # Independente do número de folds é possível afirmar que o modelo NN apresenta uma melhor accuracy
 
 ##################################################################################################################
@@ -1221,10 +1229,11 @@ knn.sd <- apply(accuracy, 2, sd)[1];
 nn.mean <- apply(accuracy, 2, mean)[2];
 nn.sd <- apply(accuracy, 2, sd)[2];
 
-# 2 melhores modelos: KNN (k=1) e NN (c(16,10.6,2))
+# 2 melhores modelos: KNN (k=1) e NN (c(16,10,6,2))
 
-# H0: Os resultados obtidos para os dois modelos são estatisticamente significativos
-# H1: Os resultados obtidos para os dois modelos não são estatisticamente significativos
+# H0: Existe diferença significativa no desempenho dos dois modelos
+# H1: Não existe diferença significativa no desempenho dos dois modelos
+
 # Criar amostra para cada modelo
 knn.sample <- c(knn.mean, knn.sd)
 nn.sample <- c(nn.mean, nn.sd)
@@ -1232,8 +1241,8 @@ nn.sample <- c(nn.mean, nn.sd)
 # Teste t com significância de 5%
 t.test(knn.sample, nn.sample)
 
-# Como p = 0.8166 > alfa = 0.05, não existe evidência estatística suficiente para se rejeitar H0.
-# Logo, conclui-se que os resultados obtidos para os dois modelos são estatisticamente significativos.
+# Como p = 0.7841 > alfa = 0.05, não existe evidência estatística suficiente para se rejeitar H0.
+# Logo, conclui-se que existe diferença significativa no desempenho dos dois modelos.
 
 ##################################################################################################################
 
@@ -1243,7 +1252,7 @@ t.test(knn.sample, nn.sample)
 # NN model -> c(16,10,6,2)
 # KNN model -> K=1
 
-# Gerar amostras aleatórias de números de 1 a 12 para atribuir um fold a cada observação do dataset
+# Gerar amostras aleatórias de números de 1 a 11 para atribuir um fold a cada observação do dataset
 # A substituição é permitida para que um mesmo fold possa ser selecionado mais de uma vez
 cvf <- 11
 folds <- sample(1:cvf, nrow(dataset), replace = TRUE)
