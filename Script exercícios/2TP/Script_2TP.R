@@ -441,16 +441,32 @@ clean_dataset.test <- clean_dataset[-index,]
 
 # Elaboração do modelo da Decision Tree
 model_dt <- rpart(
-  Pro.level~ gender + altitude_results + vo2_results + hr_results,
-  method="anova", data = clean_dataset.train)
+  Pro.level ~ gender + altitude_results + vo2_results + hr_results,
+  method = "anova", data = clean_dataset.train)
 
-# Representação do modelo sob a forma de plot
-rpart.plot(model_dt)
-predictions_dt <- predict(model_dt,  clean_dataset.test)
+# Generate predictions
+predictions_dt <- predict(model_dt, clean_dataset.test)
+
+# Arredondamento dos resultados obtidos para poder estar em sintonia com o formato binário do dataset.
 predictions_dt <- ifelse(predictions_dt > 0.5, "1", "0")
 
-# Cálculo da precisão do modelo
-accuracy_dt <- sum(predictions_dt == clean_dataset.test$Pro.level) / length(clean_dataset.test$Pro.level) * 100
+# Criação da Confusion Matrix
+cfmatrix_dt <- table(clean_dataset.test$Pro.level, predictions_dt)
+
+# Cálculo da Accuracy
+accuracy_dt <- sum(diag(cfmatrix_dt)) / sum(cfmatrix_dt) * 100
+
+# Cálculo da Sensitivity
+sensitivity_dt <- cfmatrix_dt["1", "1"] / sum(cfmatrix_dt["1", ])
+
+# Cálculo da Specificity
+specificity_dt <- cfmatrix_dt["0", "0"] / sum(cfmatrix_dt["0", ])
+
+# Cálculo do F1-score
+precision_dt <- cfmatrix_dt["1", "1"] / sum(predictions_dt == "1")
+recall_dt <- sensitivity_dt
+f1_dt <- 2 * precision_dt * recall_dt / (precision_dt + recall_dt)
+
 
 ########################################################################################################
 
@@ -469,8 +485,22 @@ plot(model_nn)
 predictions_nn <- predict(model_nn, clean_dataset.test)
 predictions_nn <- ifelse(predictions_nn > 0.5, "1", "0")
 
-# Cálculo da precisão do modelo
-accuracy_nn <- sum(predictions_nn == clean_dataset.test$Pro.level) / length(clean_dataset.test$Pro.level) * 100
+# Criação da Confusion Matrix
+cfmatrix_nn <- table(clean_dataset.test$Pro.level, predictions_nn)
+
+# Cálculo da Accuracy
+accuracy_nn <- sum(diag(cfmatrix_nn)) / sum(cfmatrix_nn) * 100
+
+# Cálculo da Sensitivity
+sensitivity_nn <- cfmatrix_nn["1", "1"] / sum(cfmatrix_nn["1", ]) * 100
+
+# Cálculo da Specificity
+specificity_nn <- cfmatrix_nn["0", "0"] / sum(cfmatrix_nn["0", ]) * 100
+
+# Cálculo do F1-score
+precision_nn <- cfmatrix_nn["1", "1"] / sum(predictions_nn == "1")
+recall_nn <- sensitivity_nn
+f1_nn <- 2 * precision_nn * recall_nn / (precision_nn + recall_nn)
 
 ########################################################################################################
 
@@ -499,13 +529,13 @@ resNeigh<-data.frame(k,accuracy)
 resNeigh[resNeigh$accuracy==max(resNeigh$accuracy), ]
 plot(resNeigh$k,resNeigh$accuracy)
 
-# Precisão máxima para k = 41
+# Precisão máxima para k = 29
 
 # Elaboração do modelo
 model_knn <- knn(train = clean_dataset.train[, -which(names(clean_dataset) == "Pro.level")],
                  test = clean_dataset.test[, -which(names(clean_dataset) == "Pro.level")],
                  cl = clean_dataset.train$Pro.level,
-                 k = 41) #resNeigh[resNeigh$accuracy==max(resNeigh$accuracy), ][1] - Uso Dinamico provocava erro
+                 k = 29) #resNeigh[resNeigh$accuracy==max(resNeigh$accuracy), ][1] - Uso Dinamico provocava erro
 
 # Confusion Matrix
 cfmatrix <- table(clean_dataset.test$Pro.level, model_knn)
@@ -544,16 +574,19 @@ for (i in 1:cvf) {
   predictions_nn <- predict(model_nn, dataset.test)
   predictions_nn <- ifelse(predictions_nn > 0.5, "1", "0")
   
-  # Cálculo d<a taxa de precisão da rede neuronal
-  accuracy_nn <- sum(predictions_nn == dataset.test$Pro.level) / length(dataset.test$Pro.level) * 100
+  # Criação da Confusion Matrix
+  cfmatrix_nn <- table(clean_dataset.test$Pro.level, predictions_nn)
+  
+  # Cálculo da Precisão da rede neuronal
+  accuracy_nn <- sum(diag(cfmatrix_nn)) / sum(cfmatrix_nn) * 100
   
   
   
-  # Treine o modelo KDD
+  # Treino do modelo KDD
   model_knn <- knn(train = dataset.train[, -which(names(dataset.train) == "Pro.level")],
                    test = dataset.test[, -which(names(dataset.test) == "Pro.level")],
                    cl = dataset.train$Pro.level,
-                   k = 41)
+                   k = 29)
   
   # Cálculo da Confusion Matrix
   cfmatrix <- table(dataset.test$Pro.level, model_knn)
