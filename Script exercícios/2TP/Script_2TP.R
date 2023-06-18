@@ -564,7 +564,7 @@ precision_knn <- cfmatrix["1", "1"] / sum(predictions_knn == "1")
 sensitivity_knn <- cfmatrix["1", "1"] / sum(cfmatrix["1", ])
 
 # Cálculo da Specificity
-specificity_knn <- cfmatrix_knn["0", "0"] / sum(cfmatrix_knn["0", ])
+specificity_knn <- cfmatrix["0", "0"] / sum(cfmatrix["0", ])
 
 # Cálculo do F1-Score
 f1_knn <- 2 * precision_knn * sensitivity_knn / (precision_knn + sensitivity_knn)
