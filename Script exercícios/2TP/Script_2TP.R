@@ -174,8 +174,10 @@ corrplot(correlation_matrix, method = "color",
          col = col_palette(200),
          order = "hclust",
          addCoef.col = "black",
-         tl.cex = 0.3, tl.col = "black",
-         diag = TRUE)
+         tl.cex = 0.5,
+         tl.col = "black",
+         diag = TRUE,
+         rect.lwd = 5)
 
 
 # 6.
