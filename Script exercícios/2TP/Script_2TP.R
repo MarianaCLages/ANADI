@@ -467,13 +467,11 @@ accuracy_dt <- sum(diag(cfmatrix_dt)) / sum(cfmatrix_dt) * 100
 # Cálculo da Sensitivity
 sensitivity_dt <- cfmatrix_dt["1", "1"] / sum(cfmatrix_dt["1", ])
 
-# Cálculo da Specificity
-specificity_dt <- cfmatrix_dt["0", "0"] / sum(cfmatrix_dt["0", ])
-
 # Cálculo do F1-score
 precision_dt <- cfmatrix_dt["1", "1"] / sum(predictions_dt == "1")
 recall_dt <- sensitivity_dt
-f1_dt <- 2 * precision_dt * recall_dt / (precision_dt + recall_dt)
+
+f1_dt <- 2 * precision_dt * sensitivity_dt / (precision_dt + sensitivity_dt)
 
 
 ########################################################################################################
@@ -499,16 +497,15 @@ cfmatrix_nn <- table(clean_dataset.test$Pro.level, predictions_nn)
 # Cálculo da Accuracy
 accuracy_nn <- sum(diag(cfmatrix_nn)) / sum(cfmatrix_nn) * 100
 
-# Cálculo da Sensitivity
-sensitivity_nn <- cfmatrix_nn["1", "1"] / sum(cfmatrix_nn["1", ]) * 100
+# Cálculo da Sensitivity/Recall
+sensitivity_nn <- cfmatrix_nn["1", "1"] / sum(cfmatrix_nn["1", ])
 
-# Cálculo da Specificity
-specificity_nn <- cfmatrix_nn["0", "0"] / sum(cfmatrix_nn["0", ]) * 100
-
-# Cálculo do F1-score
+# Cálculo da Precision
 precision_nn <- cfmatrix_nn["1", "1"] / sum(predictions_nn == "1")
-recall_nn <- sensitivity_nn
-f1_nn <- 2 * precision_nn * recall_nn / (precision_nn + recall_nn)
+
+# Cálculo do F1-Score
+f1_nn <- 2 * precision_nn * sensitivity_nn / (precision_nn + sensitivity_nn)
+
 
 ########################################################################################################
 
@@ -553,6 +550,16 @@ predictions_knn <- as.factor(model_knn)
 
 # Cálculo da precisão
 accuracy_knn <- sum(diag(cfmatrix))/sum(cfmatrix) * 100
+
+# Cálculo da Sensitivity/Recall
+sensitivity_knn <- cfmatrix["1", "1"] / sum(cfmatrix["1", ])
+
+# Cálculo da Precision
+precision_knn <- cfmatrix["1", "1"] / sum(predictions_knn == "1")
+
+# Cálculo do F1-Score
+f1_knn <- 2 * precision_knn * sensitivity_knn / (precision_knn + sensitivity_knn)
+
 
 ##################################################################################################################
 
